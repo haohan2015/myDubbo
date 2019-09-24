@@ -72,20 +72,41 @@ public final class URL implements Serializable {
 
     private static final long serialVersionUID = -1985165475234910535L;
 
+    /**
+     * 协议名称
+     */
     private final String protocol;
 
+    /**
+     * 用户名
+     */
     private final String username;
 
+    /**
+     * 密码
+     */
     private final String password;
 
+    /**
+     * 地址
+     */
     // by default, host to registry
     private final String host;
 
+    /**
+     * 端口
+     */
     // by default, port to registry
     private final int port;
 
+    /**
+     * 路径
+     */
     private final String path;
 
+    /**
+     * 参数集合
+     */
     private final Map<String, String> parameters;
 
     // ==== cache ====
