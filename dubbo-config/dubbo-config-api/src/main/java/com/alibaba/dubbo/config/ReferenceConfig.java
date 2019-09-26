@@ -203,14 +203,17 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         checkDefault();
         //为当前配置属性设置值
         appendProperties(this);
+        // 若未设置 `generic` 属性，使用 `ConsumerConfig.generic` 属性。
         if (getGeneric() == null && getConsumer() != null) {
             //设置generic
             setGeneric(getConsumer().getGeneric());
         }
+        // 泛化接口的实现
         if (ProtocolUtils.isGeneric(getGeneric())) {
             //检查是否为泛化
             interfaceClass = GenericService.class;
         } else {
+            // 普通接口的实现
             try {
                 //加载接口类，以判断接口类是否存在
                 interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
@@ -218,13 +221,19 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
+            // 校验接口和方法
             //如果有dubbo:method标签，则判断标签中的方法和接口中的方法是否匹配
             checkInterfaceAndMethods(interfaceClass, methods);
         }
+
+        // 直连提供者，参见文档《直连提供者》http://dubbo.apache.org/zh-cn/docs/user/demos/explicit-target.html
+        // 【直连提供者】第一优先级，通过 -D 参数指定 ，例如 java -Dcom.alibaba.xxx.XxxService=dubbo://localhost:20890
         // 从系统变量中获取与接口名对应的属性值
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
+        // 【直连提供者】第二优先级，通过文件映射，例如 com.alibaba.xxx.XxxService=dubbo://localhost:20890
         if (resolve == null || resolve.length() == 0) {
+            // 默认先加载，`${user.home}/dubbo-resolve.properties` 文件 ，无需配置
             // 从系统属性中获取解析文件路径
             resolveFile = System.getProperty("dubbo.resolve.file");
             if (resolveFile == null || resolveFile.length() == 0) {
@@ -235,6 +244,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     resolveFile = userResolveFile.getAbsolutePath();
                 }
             }
+            // 存在 resolveFile ，则进行文件读取加载。
             if (resolveFile != null && resolveFile.length() > 0) {
                 Properties properties = new Properties();
                 FileInputStream fis = null;
@@ -255,6 +265,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 resolve = properties.getProperty(interfaceName);
             }
         }
+        // 设置直连提供者的 url
         if (resolve != null && resolve.length() > 0) {
             // 将 resolve 赋值给 url，是用于直连情况下配置
             url = resolve;
@@ -266,6 +277,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             }
         }
+        // 从 ConsumerConfig 对象中，读取 application、module、registries、monitor 配置对象。
         if (consumer != null) {
             //如果consumer不为空，并且其他配置为空，那么从consumer中获取其他配置
             if (application == null) {
@@ -281,6 +293,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 monitor = consumer.getMonitor();
             }
         }
+        // 从 ModuleConfig 对象中，读取 registries、monitor 配置对象。
         if (module != null) {
             //如果module不为空，并且其他配置为空，那么从module中获取其他配置
             if (registries == null) {
@@ -290,6 +303,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 monitor = module.getMonitor();
             }
         }
+        // 从 ApplicationConfig 对象中，读取 registries、monitor 配置对象。
         if (application != null) {
             //如果application不为空，并且其他配置为空，那么从application中获取其他配置
             if (registries == null) {
@@ -299,10 +313,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 monitor = application.getMonitor();
             }
         }
+        // 校验 ApplicationConfig 配置。
         //校验application
         checkApplication();
+        // 校验 Stub 和 Mock 相关的配置
         // 检测本地存根配置合法性
         checkStubAndMock(interfaceClass);
+        // 将 `side`，`dubbo`，`timestamp`，`pid` 参数，添加到 `map` 集合中。
         // 添加 side、协议版本信息、时间戳和进程号等信息到 map 中
         Map<String, String> map = new HashMap<String, String>();
         Map<Object, Object> attributes = new HashMap<Object, Object>();

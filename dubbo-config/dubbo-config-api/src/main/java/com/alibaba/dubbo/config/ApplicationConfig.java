@@ -35,51 +35,69 @@ public class ApplicationConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 5508512956753757169L;
 
+    //应用名称当前应用名称，用于注册中心计算应用间依赖关系，注意：消费者和提供者应用名不要一样，此参数不是匹配条件，
+    // 你当前项目叫什么名字就填什么，和提供者消费者角色无关，比如：kylin应用调用了morgan应用的服务，则kylin项目配成kylin
+    // ，morgan项目配成morgan，可能kylin也提供其它服务给别人使用，但kylin项目永远配成kylin，这样注册中心将显示kylin依赖于morgan
     // application name
     private String name;
 
+    //当前应用的版本
     // module version
     private String version;
 
+    //应用负责人，用于服务治理，请填写负责人公司邮箱前缀
     // application owner
     private String owner;
 
+    //组织名称(BU或部门)，用于注册中心区分服务来源，此配置项建议不要使用autoconfig，
+    // 直接写死在配置中，比如china,intl,itu,crm,asc,dw,aliexpress等
     // application's organization (BU)
     private String organization;
 
+    //用于服务分层对应的架构。如，intl、china。不同的架构使用不同的分层。
     // architecture layer
     private String architecture;
 
+    //应用环境，如：develop/test/product，不同环境使用不同的缺省值，以及作为只用于开发测试功能的限制条件
     // environment, e.g. dev, test or production
     private String environment;
 
+    //Java字节码编译器，用于动态类的生成，可选：jdk或javassist
     // Java compiler
     private String compiler;
 
+    //日志输出方式，可选：slf4j,jcl,log4j,log4j2,jdk
     // logger
     private String logger;
 
+    //注册中心
     // registry centers
     private List<RegistryConfig> registries;
 
+    //监控中心
     // monitor center
     private MonitorConfig monitor;
 
+    //是否是默认
     // is default or not
     private Boolean isDefault;
 
     // directory for saving thread dump
     private String dumpDirectory;
 
+    //是否可以远程服务
     // whether to enable qos or not
     private Boolean qosEnable;
 
+    //远程服务监听端口
     // the qos port to listen
     private Integer qosPort;
 
+    //远程服务允许的外部ip
     // should we accept foreign ip or not?
     private Boolean qosAcceptForeignIp;
 
+    //参数
     // customized parameters
     private Map<String, String> parameters;
 

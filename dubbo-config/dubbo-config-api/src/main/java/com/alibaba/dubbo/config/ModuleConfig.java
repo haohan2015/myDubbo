@@ -30,15 +30,19 @@ public class ModuleConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 5508512956753757169L;
 
+    //当前模块名称，用于注册中心计算模块间依赖关系
     // module name
     private String name;
 
+    //当前模块的版本
     // module version
     private String version;
 
+    //模块负责人，用于服务治理，请填写负责人公司邮箱前缀
     // module owner
     private String owner;
 
+    //组织名称(BU或部门)，用于注册中心区分服务来源，此配置项建议不要使用autoconfig，直接写死在配置中，比如china,intl,itu,crm,asc,dw,aliexpress等
     // module's organization
     private String organization;
 

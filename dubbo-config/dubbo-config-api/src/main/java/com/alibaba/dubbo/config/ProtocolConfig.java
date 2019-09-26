@@ -39,33 +39,48 @@ public class ProtocolConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 6913423882496634749L;
 
+    //协议名称,缺省dubbo
     // protocol name
     private String name;
 
+    //服务主机名，多网卡选择或指定VIP及域名时使用，为空则自动查找本机IP，-建议不要配置，让Dubbo自动获取本机IP
     // service IP address (when there are multiple network cards available)
     private String host;
 
+    //服务端口
+    //dubbo协议缺省端口为20880，rmi协议缺省端口为1099，http和hessian协议缺省端口为80；
+    // 如果没有配置port，则自动采用默认端口，
+    // 如果配置为-1，则会分配一个没有被占用的端口。Dubbo 2.4.0+，分配的端口在协议缺省端口的基础上增长，确保端口段可控。
     // service port
     private Integer port;
 
     // context path
     private String contextpath;
 
+    //线程池类型，可选：fixed/cached
+    //缺省fixed
     // thread pool
     private String threadpool;
 
+    //服务线程池大小(固定大小)
+    //缺省是200
     // thread pool size (fixed size)
     private Integer threads;
 
+    //io线程池大小(固定大小)
+    //缺省cpu个数+1
     // IO thread pool size (fixed size)
     private Integer iothreads;
 
     // thread pool's queue length
     private Integer queues;
 
+    //服务提供方最大可接受连接数	2.0.5
     // max acceptable connections
     private Integer accepts;
 
+    //协议编码方式
+    //缺省dubbo
     // protocol codec
     private String codec;
 
@@ -75,6 +90,8 @@ public class ProtocolConfig extends AbstractConfig {
     // charset
     private String charset;
 
+    //请求及响应数据包大小限制，单位：字节
+    //8388608(=8M)
     // payload max length
     private Integer payload;
 

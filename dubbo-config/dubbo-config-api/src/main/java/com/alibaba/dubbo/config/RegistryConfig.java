@@ -30,21 +30,29 @@ public class RegistryConfig extends AbstractConfig {
 
     public static final String NO_AVAILABLE = "N/A";
     private static final long serialVersionUID = 5508512956753757169L;
+
+    //注册中心服务器地址，如果地址没有端口缺省为9090，同一集群内的多个地址用逗号分隔，如：ip:port,ip:port，
+    // 不同集群的注册中心，请配置多个<dubbo:registry>标签
     // register center address
     private String address;
 
+    //登录注册中心用户名，如果注册中心不需要验证可不填
     // username to login register center
     private String username;
 
+    //登录注册中心密码，如果注册中心不需要验证可不填
     // password to login register center
     private String password;
 
+    //注册中心缺省端口，当address没有带端口时使用此端口做为缺省值
     // default port for register center
     private Integer port;
 
+    //注册中心地址协议，支持dubbo, multicast, zookeeper, redis, consul(2.7.1), sofa(2.7.2), etcd(2.7.2), nacos(2.7.2)等协议
     // protocol for register center
     private String protocol;
 
+    //网络传输方式，可选mina,netty
     // client impl
     private String transporter;
 
@@ -54,31 +62,40 @@ public class RegistryConfig extends AbstractConfig {
 
     private String cluster;
 
+    //服务注册分组，跨组的服务不会相互影响，也无法相互调用，适用于环境隔离。
     private String group;
 
     private String version;
 
+    //注册中心请求超时时间(毫秒)
     // request timeout in milliseconds for register center
     private Integer timeout;
 
+    //注册中心会话超时时间(毫秒)，用于检测提供者非正常断线后的脏数据，比如用心跳检测的实现，此时间就是心跳间隔，不同注册中心实现不一样。
     // session timeout in milliseconds for register center
     private Integer session;
 
+    //使用文件缓存注册中心地址列表及服务提供者列表，应用重启时将基于此文件恢复，注意：两个注册中心不能使用同一文件存储
     // file for saving register center dynamic list
     private String file;
 
+    //停止时等待通知完成时间(毫秒)
     // wait time before stop
     private Integer wait;
 
+    //注册中心不存在时，是否报错
     // whether to check if register center is available when boot up
     private Boolean check;
 
+    //服务是否动态注册，如果设为false，注册后将显示为disable状态，需人工启用，并且服务提供者停止时，也不会自动取消注册，需人工禁用。
     // whether to allow dynamic service to register on the register center
     private Boolean dynamic;
 
+    //是否向此注册中心注册服务，如果设为false，将只订阅，不注册
     // whether to export service on the register center
     private Boolean register;
 
+    //是否向此注册中心订阅服务，如果设为false，将只注册，不订阅
     // whether allow to subscribe service on the register center
     private Boolean subscribe;
 

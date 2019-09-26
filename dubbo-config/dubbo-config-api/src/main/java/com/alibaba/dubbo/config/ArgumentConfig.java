@@ -27,12 +27,15 @@ public class ArgumentConfig implements Serializable {
 
     private static final long serialVersionUID = -2165482463925213595L;
 
+    //参数索引，-1代表没有设置
     //argument: index -1 represents not set
     private Integer index = -1;
 
+    //参数类型
     //argument type
     private String type;
 
+    //参数是否为callback接口，如果为callback，服务提供方将生成反向代理，可以从服务提供方反向调用消费方，通常用于事件推送.
     //callback interface
     private Boolean callback;
 
