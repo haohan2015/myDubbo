@@ -41,6 +41,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
     private final Invoker<T> invoker;
 
     public MockClusterInvoker(Directory<T> directory, Invoker<T> invoker) {
+        //在集群模式缺省的情况下，invoker的真实类型是FailoverClusterInvoker
         this.directory = directory;
         this.invoker = invoker;
     }

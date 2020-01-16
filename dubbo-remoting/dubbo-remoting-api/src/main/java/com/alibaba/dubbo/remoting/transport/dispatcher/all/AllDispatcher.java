@@ -29,6 +29,7 @@ public class AllDispatcher implements Dispatcher {
 
     @Override
     public ChannelHandler dispatch(ChannelHandler handler, URL url) {
+        //对于服务导出，那么此处的handler的类型为DecodeHandler
         return new AllChannelHandler(handler, url);
     }
 

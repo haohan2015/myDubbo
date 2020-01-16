@@ -63,6 +63,7 @@ public class ChannelEventRunnable implements Runnable {
             switch (state) {
             case CONNECTED:
                 try {
+                    //AbstractChannelHandlerDelegate
                     handler.connected(channel);
                 } catch (Exception e) {
                     logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel, e);

@@ -357,6 +357,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendParameters(map, module);
         appendParameters(map, consumer, Constants.DEFAULT_KEY);
         appendParameters(map, this);
+        //prefix=com.alibaba.dubbo.demo.DemoService
         String prefix = StringUtils.getServiceKey(map);
         //当指定dubbo:method标签的时候
         if (methods != null && !methods.isEmpty()) {
@@ -424,7 +425,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (isJvmRefer) {
             // 生成本地引用 URL，协议为 injvm
             URL url = new URL(Constants.LOCAL_PROTOCOL, NetUtils.LOCALHOST, 0, interfaceClass.getName()).addParameters(map);
-            // 调用 refer 方法构建 InjvmInvoker 实例
+            /**
+             * 此处的refprotocol的真实类型是protocol$Adaptive，自适应也不是直接调用inJvmProtocol，而是首先调用的是ProtocolListenerWrapper
+             * ，然后又调用ProtocolFilterWrapper，然后才是真实的调用inJvmProtocol，生成InjvmInvoker，返回到ProtocolFilterWrapper封装引用过滤器，
+             * 返回到ProtocolListenerWrapper会通知该服务的引用通知，然后封装为ListenerInvokerWrapper返回，所以此处的Invoker的真实类型是ListenerInvokerWrapper
+             */
             invoker = refprotocol.refer(interfaceClass, url);
             if (logger.isInfoEnabled()) {
                 logger.info("Using injvm service " + interfaceClass.getName());
@@ -475,7 +480,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
             // 单个注册中心或服务直连提供者(服务直连，下同)
             if (urls.size() == 1) {
-                //此处的refprotocol类型为Protocol$Adaptive，会根据url中的Protocol来加载具体的实现，此处调用的是RegistryProtocol
+                /**
+                 * 此处的refprotocol类型为Protocol$Adaptive，会根据url中的Protocol来加载具体的实现，但是实际也并不是直接调用的真实实现类，而是首先调用的是ProtocolListenerWrapper
+                 * 如果当前的url的protocol是registry，那么直接调用ProtocolFilterWrapper，对于直连的场景，也是会调用ProtocolFilterWrapper，但是拿到返回结果后，会通知改服务导出的监听者，
+                 * 然后返回ListenerInvokerWrapper，但是对于有注册中心的场景会直接调用ProtocolFilterWrapper，对于ProtocolFilterWrapper来说，如果是直连，会直接调用dubboProtocol，拿到返回值DubboInvoker
+                 * 会封装过滤器链条返回，对于有注册中心，会直接调用registryProtocol，之所以对于有注册中心的场景没有通知服务导出监听者和生成过滤器链条，是因为接下来在registry里真实导出服务的时候会有这些流程
+                 * 此处的invoker的实际类型是MockClusterInvoker
+                 */
                 invoker = refprotocol.refer(interfaceClass, urls.get(0));
             } else {
                 // 多个注册中心，或多个服务直连提供者，或者两者混合
@@ -517,7 +528,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         // create service proxy
         // 生成代理类，此处的invoker类型为MockClusterInvoker
-        //此处调用的是StubProxyFactoryWrapper的getProxy
+        //此处proxyFactory的实际类型是proxyFactory$Adaptive调用的是StubProxyFactoryWrapper的getProxy
         return (T) proxyFactory.getProxy(invoker);
     }
 

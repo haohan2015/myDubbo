@@ -450,7 +450,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 appendParameters(map, method, method.getName());
                 String retryKey = method.getName() + ".retry";
                 if (map.containsKey(retryKey)) {
-                    //如果map中包含方法级别的充值参数，那么移除，并且如果值等于false那么设置方法级别的重试次数为0
+                    //如果map中包含方法级别的重试参数，那么移除，并且如果值等于false那么设置方法级别的重试次数为0
                     String retryValue = map.remove(retryKey);
                     if ("false".equals(retryValue)) {
                         map.put(method.getName() + ".retries", "0");
@@ -629,8 +629,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         //Dubbo 默认的 ProxyFactory 实现类是 JavassistProxyFactory
                         //通过代理工厂创建代理类，注意此时invoker里放的url是registryURL，此处proxyFactory的是proxyFactory$Adaptive，此处默认实现是JavassistProxyFactory
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
-                        // DelegateProviderMetaDataInvoker 用于持有 Invoker 和 ServiceConfig
+                        // DelegateProviderMetaDataInvoker 用于持有 Invoker 和 ServiceConfig，此处的invoer实际是AbstractProxyInvoker的匿名实现类
                         //原始Invoker的代理
+                        /**
+                         * 此处的protocol实际类型是Protocol$Adaptive，而适应类里调用的也不是RegistryProtocol,
+                         * 首先是包装类ProtocolListenerWrapper，该类中继续调用包装类ProtocolFilterWrapper，最后调用
+                         * RegistryProtocol生成Exporter，然后在ProtocolListenerWrapper中创建ListenerExporterWrapper，并且在ListenerExporterWrapper对于服务导出监听器调用
+                         * 此处导出的exporter实际类型是ListenerExporterWrapper
+                         */
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
                         //通过RegistryProtocol来暴露远程服务
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
@@ -650,7 +656,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void exportLocal(URL url) {
-        //// 如果 URL 的协议头等于 injvm，说明已经导出到本地了，无需再次导出
+        // 如果 URL 的协议头等于 injvm，说明已经导出到本地了，无需再次导出
         if (!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
             URL local = URL.valueOf(url.toFullString())
                     .setProtocol(Constants.LOCAL_PROTOCOL)// 设置协议头为 injvm
@@ -658,8 +664,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .setPort(0);
             //把当前引用的类型放到当前线程的ThreadLocal
             ServiceClassHolder.getInstance().pushServiceClass(getServiceClass(ref));
-            //首先通过Javassist生成代理类，然后调用InjvmProtocol来生产Exporter
-            // 创建 Invoker，并导出服务，这里的 protocol 会在运行时调用 InjvmProtocol 的 export 方法
+            /**此处的proxyFactory是自适应，实际是通过Javassist生成代理类，此处的protocol实际类型是Protocol$Adaptive，而适应类里调用的也不是injvmProtocol,
+             * 首先是包装类ProtocolListenerWrapper，该类中继续调用包装类ProtocolFilterWrapper，在该类中基于真实的invoker生成过滤器链条，最后调用
+             * injvmInvoker生成Exporter，然后在ProtocolListenerWrapper中创建ListenerExporterWrapper，并且在ListenerExporterWrapper对于服务导出监听器调用
+             * 此处导出的exporter实际类型是ListenerExporterWrapper
+             */
             Exporter<?> exporter = protocol.export(
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
             //添加服务Exporter到exporters

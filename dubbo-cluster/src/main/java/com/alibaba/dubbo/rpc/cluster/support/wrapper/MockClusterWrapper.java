@@ -35,6 +35,7 @@ public class MockClusterWrapper implements Cluster {
 
     @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+        //此处的directory的真实类型是StaticDirectory
         //此处的cluster默认类型是FailoverCluster
         return new MockClusterInvoker<T>(directory,
                 this.cluster.join(directory));

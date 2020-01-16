@@ -40,6 +40,7 @@ public abstract class AbstractChannelHandlerDelegate implements ChannelHandlerDe
 
     @Override
     public void connected(Channel channel) throws RemotingException {
+        //HeaderExchangeHandler
         handler.connected(channel);
     }
 

@@ -51,7 +51,7 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
 
         handler.received(channel, message);
     }
-
+    //message类型是DecodeableRpcInvocation
     private void decode(Object message) {
         if (message != null && message instanceof Decodeable) {
             try {

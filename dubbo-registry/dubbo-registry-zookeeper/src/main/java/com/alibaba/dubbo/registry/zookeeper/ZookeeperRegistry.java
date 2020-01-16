@@ -57,6 +57,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     private final ZookeeperClient zkClient;
 
     public ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
+        //此处的zookeeperTransporter的真实是ZookeeperTransporter$Adaptive
         super(url);
         //如果是任何地址则抛异常
         if (url.isAnyHost()) {
@@ -175,6 +176,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
             } else {
                 List<URL> urls = new ArrayList<URL>();
                 //其中toCategoriesPath通过解析URL的category属性，来获得当前要监听的路径
+                //如果是提供者，那么toCategoriesPath解析的结果是长度为0的数组，元素等于
                 for (String path : toCategoriesPath(url)) {
                     //如果是配置path类似/dubbo/com.alibaba.dubbo.demo.DemoService/configurators
                     //如果是消费者path类似/dubbo/com.alibaba.dubbo.demo.DemoService/providers
@@ -190,7 +192,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     //获取该监听者的子监听者
                     ChildListener zkListener = listeners.get(listener);
                     if (zkListener == null) {
-                        //如果不存在则创建该监听者的子监听者，改子监听者只是监听zookeeper节点的变动
+                        //如果不存在则创建该监听者的子监听者，该子监听者只是监听zookeeper节点的变动
                         listeners.putIfAbsent(listener, new ChildListener() {
                             @Override
                             public void childChanged(String parentPath, List<String> currentChilds) {

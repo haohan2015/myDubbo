@@ -67,6 +67,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
 
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
+        //此处的handler的真实类型是MultiMessageHandler
         super(url, handler);
 
         send_reconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, false);
@@ -105,6 +106,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                             + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(), t);
         }
 
+        //获取线程池，并且移除SimpleDataStore中存储的线程池，改线程池是在WrappedChannelHandler的构造函数中放入的
         executor = (ExecutorService) ExtensionLoader.getExtensionLoader(DataStore.class)
                 .getDefaultExtension().get(Constants.CONSUMER_SIDE, Integer.toString(url.getPort()));
         ExtensionLoader.getExtensionLoader(DataStore.class)
@@ -112,6 +114,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     }
 
     protected static ChannelHandler wrapChannelHandler(URL url, ChannelHandler handler) {
+        //此处的handler 是DecodeHandler
         url = ExecutorUtil.setThreadName(url, CLIENT_THREAD_POOL_NAME);
         url = url.addParameterIfAbsent(Constants.THREADPOOL_KEY, Constants.DEFAULT_CLIENT_THREADPOOL);
         return ChannelHandlers.wrap(handler, url);
@@ -271,6 +274,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             if (isConnected()) {
                 return;
             }
+            //重连机制
             initConnectStatusCheckCommand();
             doConnect();
             if (!isConnected()) {

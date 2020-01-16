@@ -96,6 +96,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
                 return registry;
             }
             //创建注册中心，此处是一个模板方法，实际上需要调用实现类的方法
+            //如果注册中心用的是zookeeper，那么此处调用的是ZookeeperRegistryFactory
             registry = createRegistry(url);
             if (registry == null) {
                 throw new IllegalStateException("Can not create registry " + url);

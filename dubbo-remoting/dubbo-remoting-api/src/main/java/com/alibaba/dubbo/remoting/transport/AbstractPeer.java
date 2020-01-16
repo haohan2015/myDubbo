@@ -38,6 +38,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
     private volatile boolean closed;
 
     public AbstractPeer(URL url, ChannelHandler handler) {
+        //此处的handler的真实类型是MultiMessageHandler
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }

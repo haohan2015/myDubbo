@@ -32,7 +32,7 @@ public class JavassistProxyFactory extends AbstractProxyFactory {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getProxy(Invoker<T> invoker, Class<?>[] interfaces) {
-        //interfaces=com.alibaba.dubbo.demo.DemoService
+        //interfaces=com.alibaba.dubbo.demo.DemoService，此处真实返回的是生成的代理对象类似
         return (T) Proxy.getProxy(interfaces).newInstance(new InvokerInvocationHandler(invoker));
     }
 
@@ -42,6 +42,7 @@ public class JavassistProxyFactory extends AbstractProxyFactory {
         // TODO Wrapper cannot handle this scenario correctly: the classname contains '$'
         final Wrapper wrapper = Wrapper.getWrapper(proxy.getClass().getName().indexOf('$') < 0 ? proxy.getClass() : type);
         // 创建匿名 Invoker 类对象，并实现 doInvoke 方法。
+        //此处的proxy通常是spring的bean ref
         return new AbstractProxyInvoker<T>(proxy, type, url) {
             @Override
             protected Object doInvoke(T proxy, String methodName,

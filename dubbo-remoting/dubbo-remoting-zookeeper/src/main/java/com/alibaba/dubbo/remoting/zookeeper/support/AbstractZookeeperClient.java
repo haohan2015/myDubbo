@@ -102,6 +102,7 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
             listeners = childListeners.get(path);
         }
         //获取该子监听者的目标子监听者，该目标子监听者用于监听真实的注册中心节点变化情况
+        //targetListener的真实类型是CuratorWatcherImpl
         TargetChildListener targetListener = listeners.get(listener);
         if (targetListener == null) {
             //不存在的话就创建，，此处的createTargetChildListener是个模板方法

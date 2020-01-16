@@ -28,6 +28,7 @@ import com.alibaba.dubbo.remoting.exchange.support.MultiMessage;
 public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
 
     public MultiMessageHandler(ChannelHandler handler) {
+        //此处handler的真实类型是HeartbeatHandler
         super(handler);
     }
 

@@ -36,6 +36,7 @@ public class HeaderExchanger implements Exchanger {
 
     @Override
     public ExchangeClient connect(URL url, ExchangeHandler handler) throws RemotingException {
+        //handler的真实类型是DubboProtocol中ExchangeHandlerAdapter的匿名内部实现类的属性
         // 这里包含了多个调用，分别如下：
         // 1. 创建 HeaderExchangeHandler 对象
         // 2. 创建 DecodeHandler 对象
@@ -46,7 +47,7 @@ public class HeaderExchanger implements Exchanger {
 
     @Override
     public ExchangeServer bind(URL url, ExchangeHandler handler) throws RemotingException {
-        //此处的handler是DubboProtocol的内部实现类requestHandler
+        //此处的handler的实际类型是DubboProtocol的ExchangeHandlerAdapter的匿名内部类的实现属性requestHandler
         //1.用HeaderExchangeHandler包装ExchangeHandlerAdapter
         //2.用户DecodeHandler包装HeaderExchangeHandler
         //3.启动Server
@@ -54,8 +55,9 @@ public class HeaderExchanger implements Exchanger {
 
         // 创建 HeaderExchangeServer 实例，该方法包含了多个逻辑，分别如下：
         //   1. new HeaderExchangeHandler(handler)
-        //	 2. new DecodeHandler(new HeaderExchangeHandler(handler))
-        //   3. Transporters.bind(url, new DecodeHandler(new HeaderExchangeHandler(handler)))
+        //	 2. new DecodeHandler(new HeaderExchangeHandler(handler))，对收到的消息进行解码
+        //   3. Transporters.bind(url, new DecodeHandler(new HeaderExchangeHandler(handler)))，返回的是nettyServer
+        //   此处的url是protocol=dubbo的服务导出url
         return new HeaderExchangeServer(Transporters.bind(url, new DecodeHandler(new HeaderExchangeHandler(handler))));
     }
 

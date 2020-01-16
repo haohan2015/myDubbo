@@ -49,7 +49,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     private final ExchangeHandler handler;
 
     public HeaderExchangeHandler(ExchangeHandler handler) {
-        //此处的handler是DubboProtocol的内部实现类requestHandler
+        //此处的handler的实际类型是DubboProtocol的ExchangeHandlerAdapter的匿名内部类的实现属性requestHandler
         if (handler == null) {
             throw new IllegalArgumentException("handler == null");
         }
@@ -103,7 +103,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         }
         return res;
     }
-
+    //channel类型是NettyChannel
     @Override
     public void connected(Channel channel) throws RemotingException {
         channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());

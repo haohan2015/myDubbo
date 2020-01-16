@@ -375,6 +375,9 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     protected void notify(URL url, NotifyListener listener, List<URL> urls) {
+        /**
+         * 1.当前如果是消费者，那么url是消费者url，listener的真实类型是RegistryDirectory，urls包括提供者，路由，配置
+         */
         if (url == null) {
             throw new IllegalArgumentException("notify url == null");
         }

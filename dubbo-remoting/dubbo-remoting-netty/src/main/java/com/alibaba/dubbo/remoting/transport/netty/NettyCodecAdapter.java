@@ -53,8 +53,11 @@ final class NettyCodecAdapter {
     private final com.alibaba.dubbo.remoting.ChannelHandler handler;
 
     public NettyCodecAdapter(Codec2 codec, URL url, com.alibaba.dubbo.remoting.ChannelHandler handler) {
+        //此处的codec的真是类型是DubboCountCodec
         this.codec = codec;
         this.url = url;
+        //1.如果是provider，那么此处的handler的真实类型是NettyServer
+        //2.如果是consumer，那么此处的handler的真实类型是NettyClient
         this.handler = handler;
         int b = url.getPositiveParameter(Constants.BUFFER_KEY, Constants.DEFAULT_BUFFER_SIZE);
         this.bufferSize = b >= Constants.MIN_BUFFER_SIZE && b <= Constants.MAX_BUFFER_SIZE ? b : Constants.DEFAULT_BUFFER_SIZE;

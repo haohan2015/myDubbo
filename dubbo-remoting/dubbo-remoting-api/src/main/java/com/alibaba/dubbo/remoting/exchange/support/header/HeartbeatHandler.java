@@ -36,6 +36,7 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
     public static String KEY_WRITE_TIMESTAMP = "WRITE_TIMESTAMP";
 
     public HeartbeatHandler(ChannelHandler handler) {
+        //对于服务导出，此处的handler真实类型是AllChannelHandler
         super(handler);
     }
 

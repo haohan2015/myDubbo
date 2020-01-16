@@ -33,6 +33,7 @@ public class ProviderInvokerWrapper<T> implements Invoker {
     private volatile boolean isReg;
 
     public ProviderInvokerWrapper(Invoker<T> invoker,URL registryUrl,URL providerUrl) {
+        //此处的invoker的类型是DelegateProviderMetaDataInvoker
         this.invoker = invoker;
         this.originUrl = URL.valueOf(invoker.getUrl().toFullString());
         this.registryUrl = URL.valueOf(registryUrl.toFullString());

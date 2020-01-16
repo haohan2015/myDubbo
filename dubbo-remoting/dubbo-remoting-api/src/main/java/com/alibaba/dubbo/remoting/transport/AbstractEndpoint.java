@@ -41,7 +41,9 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
     private int connectTimeout;
 
     public AbstractEndpoint(URL url, ChannelHandler handler) {
+        //此处的handler的真实类型是MultiMessageHandler
         super(url, handler);
+        //此处的codec的真是类型是DubboCountCodec
         this.codec = getChannelCodec(url);
         this.timeout = url.getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT);

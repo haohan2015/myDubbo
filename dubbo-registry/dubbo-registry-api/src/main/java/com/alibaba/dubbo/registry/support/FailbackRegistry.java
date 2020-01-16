@@ -138,7 +138,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         failedUnregistered.remove(url);
         try {
             // Sending a registration request to the server side
-            // 模板方法，由子类实现
+            // 模板方法，由子类实现，如果注册中心是zookeeper，那么此处调用的是ZookeeperRegistry
             doRegister(url);
         } catch (Exception e) {
             Throwable t = e;
@@ -196,11 +196,13 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     @Override
     public void subscribe(URL url, NotifyListener listener) {
+        //1.如果是服务提供者，那么listener的真实类型是OverrideListener
+        //2.如果是服务消费者，那么listener的真实类型是RegistryDirectory
         //添加listener
         super.subscribe(url, listener);
-        //1.移除该消费者URL对应的失败订阅监听者
-        //2.移除该消费者URL对应的失败取消订阅的监听者
-        //3.移除该消费者URL对应的失败通知监听者
+        //1.移除该消费者URL对应的失败订阅监听者（仅针对当前是消费者的情况）
+        //2.移除该消费者URL对应的失败取消订阅的监听者（仅针对当前是消费者的情况）
+        //3.移除该消费者URL对应的失败通知监听者（仅针对当前是消费者的情况）
         removeFailedSubscribed(url, listener);
         try {
             // Sending a subscription request to the server side
@@ -272,7 +274,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         if (url == null) {
             throw new IllegalArgumentException("notify url == null");
         }
-        //
+        //当前Listener的真实类型是RegistryDirectory
         if (listener == null) {
             throw new IllegalArgumentException("notify listener == null");
         }

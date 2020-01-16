@@ -60,6 +60,7 @@ public class Exchangers {
     }
 
     public static ExchangeServer bind(URL url, ExchangeHandler handler) throws RemotingException {
+        //此处的handler的实际类型是DubboProtocol的ExchangeHandlerAdapter的匿名内部类的实现属性requestHandler
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
@@ -70,7 +71,7 @@ public class Exchangers {
         url = url.addParameterIfAbsent(Constants.CODEC_KEY, "exchange");
         //getExchanger返回的类型为HeaderExchanger
         // 获取 Exchanger，默认为 HeaderExchanger。
-        // 紧接着调用 HeaderExchanger 的 bind 方法创建 ExchangeServer 实例
+        // 紧接着调用 HeaderExchanger 的 bind 方法创建 ExchangeServer 实例，返回的是HeaderExchangeServer
         return getExchanger(url).bind(url, handler);
     }
 
@@ -103,6 +104,7 @@ public class Exchangers {
     }
 
     public static ExchangeClient connect(URL url, ExchangeHandler handler) throws RemotingException {
+        //handler的真实类型是DubboProtocol中ExchangeHandlerAdapter的匿名内部实现类的属性
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }

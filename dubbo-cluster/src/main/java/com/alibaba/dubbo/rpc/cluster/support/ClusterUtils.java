@@ -31,6 +31,14 @@ public class ClusterUtils {
     private ClusterUtils() {
     }
 
+    /**
+     * 1.把一些本应该本端的配置，但是远程url却配置了，然后移除，比如线程名称
+     * 2.把本地配置加到远程url
+     * 3.把远程url中的一些配置信息的key改变后重新赋值，然后生成新的远程url
+     * @param remoteUrl
+     * @param localMap
+     * @return
+     */
     public static URL mergeUrl(URL remoteUrl, Map<String, String> localMap) {
         Map<String, String> map = new HashMap<String, String>();
         Map<String, String> remoteMap = remoteUrl.getParameters();
@@ -40,6 +48,7 @@ public class ClusterUtils {
             map.putAll(remoteMap);
 
             // Remove configurations from provider, some items should be affected by provider.
+            //移除一些不应该被远程url影响到的配置信息
             map.remove(Constants.THREAD_NAME_KEY);
             map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.THREAD_NAME_KEY);
 
@@ -62,9 +71,12 @@ public class ClusterUtils {
             map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.TRANSPORTER_KEY);
         }
 
+        //加入本地配置
         if (localMap != null && localMap.size() > 0) {
             map.putAll(localMap);
         }
+
+        //对于部分远程配置，需要改变key值后重新设置
         if (remoteMap != null && remoteMap.size() > 0) {
             // Use version passed from provider side
             String dubbo = remoteMap.get(Constants.DUBBO_VERSION_KEY);

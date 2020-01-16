@@ -129,7 +129,7 @@ public class RegistryProtocol implements Protocol {
 
     @Override
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
-        //export invoker
+        //export invoker，此处的originInvoker的实际类型是DelegateProviderMetaDataInvoker
         //暴露服务
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker);
         // 获取注册中心 URL，以 zookeeper 注册中心为例，得到的示例 URL 如下：
@@ -152,7 +152,6 @@ public class RegistryProtocol implements Protocol {
         // 向服务提供者与消费者注册表中注册服务提供者
         ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
 
-        // 向服务提供者与消费者注册表中注册服务提供者
         // 根据 register 的值决定是否注册服务
         if (register) {
             // 向注册中心注册服务
@@ -165,6 +164,7 @@ public class RegistryProtocol implements Protocol {
         // FIXME When the provider subscribes, it will affect the scene : a certain JVM exposes the service and call the same service. Because the subscribed is cached key with the name of the service, it causes the subscription information to cover.
         // 获取订阅 URL，比如：
         // provider://172.17.48.52:20880/com.alibaba.dubbo.demo.DemoService?category=configurators&check=false&anyhost=true&application=demo-provider&dubbo=2.0.2&generic=false&interface=com.alibaba.dubbo.demo.DemoService&methods=sayHello
+        // registeredProviderUrl本来的protocol=dubbo，改成provider
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(registeredProviderUrl);
         // 创建监听器
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
@@ -180,6 +180,7 @@ public class RegistryProtocol implements Protocol {
     @SuppressWarnings("unchecked")
     private <T> ExporterChangeableWrapper<T> doLocalExport(final Invoker<T> originInvoker) {
         //获取已经导出服务的缓存Key
+        //此处的originInvoker的实际类型是DelegateProviderMetaDataInvoker
         //key类似dubbo://172.16.10.53:20880/com.alibaba.dubbo.demo.DemoService?anyhost=true&application=demo-provider
         // &bind.ip=172.16.10.53&bind.port=20880&dubbo=2.0.2&generic=false&interface=com.alibaba.dubbo.demo.DemoService
         // &methods=sayHello&pid=14264&qos.port=22222&side=provider&timestamp=1560860800207
@@ -193,8 +194,11 @@ public class RegistryProtocol implements Protocol {
                     //根据原始Invoker和提供者URL创建InvokerDelegete，其中InvokerDelegete是内部类
                     // 创建 Invoker 为委托类对象
                     final Invoker<?> invokerDelegete = new InvokerDelegete<T>(originInvoker, getProviderUrl(originInvoker));
-                    //此处调用的是DubboProtocol的export
-                    // 调用 protocol 的 export 方法导出服务
+                    /**
+                     * 此处的protocol是自适应类Protocol$Adaptive，在自适应中也不是直接调用DubboProtocol，而是首先调用ProtocolListenerWrapper，
+                     * 在该类中调用了ProtocolFilterWrapper，创建完顾虑器链条，然后才是真实调用DubboProtocol导出服务，最后返回DubboExporter，然后返回ProtocolListenerWrapper
+                     * 通知服务导出监听者，并且最后包装返回ListenerExporterWrapper
+                     */
                     exporter = new ExporterChangeableWrapper<T>((Exporter<T>) protocol.export(invokerDelegete), originInvoker);
                     bounds.put(key, exporter);
                 }
@@ -258,7 +262,7 @@ public class RegistryProtocol implements Protocol {
     private Registry getRegistry(final Invoker<?> originInvoker) {
         //获取注册地址
         URL registryUrl = getRegistryUrl(originInvoker);
-        //此处是调用的AbstractRegistryFactory的getRegistry
+        //此处的registryFactory的真实类型RegistryFactory，最终调用的是AbstractRegistryFactory的getRegistry
         return registryFactory.getRegistry(registryUrl);
     }
 
@@ -335,7 +339,7 @@ public class RegistryProtocol implements Protocol {
     @Override
     @SuppressWarnings("unchecked")
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        //设置protocol属性值为registry=zookeeper默认为dubbo，移除参数中的registry
+        //设置protocol属性值为zookeeper默认为dubbo，设置之前是registry，移除参数中的registry
         url = url.setProtocol(url.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_REGISTRY)).removeParameter(Constants.REGISTRY_KEY);
         // 获取注册中心实例
         Registry registry = registryFactory.getRegistry(url);
@@ -371,6 +375,9 @@ public class RegistryProtocol implements Protocol {
 
     private <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
         // 创建 RegistryDirectory 实例
+        //此处的type=com.alibaba.dubbo.demo.DemoService
+        //url的protocol=zookeeper
+        //cluster=Cluster$Adaptive
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         // 设置注册中心和协议
         directory.setRegistry(registry);
@@ -396,6 +403,7 @@ public class RegistryProtocol implements Protocol {
 
         // 一个注册中心可能有多个服务提供者，因此这里需要将多个服务提供者合并为一个
         //对于有多个注册中心，或者有多个提供者，那么通过集群的方式合并
+        //最后实际调用的是MockClusterWrapper，最后返回的是MockClusterInvoker
         Invoker invoker = cluster.join(directory);
         ProviderConsumerRegTable.registerConsumer(invoker, url, subscribeUrl, directory);
         return invoker;

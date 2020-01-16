@@ -53,9 +53,11 @@ public class NettyClient extends AbstractClient {
             Constants.DEFAULT_IO_THREADS);
     private ClientBootstrap bootstrap;
 
+    //如果网络框架用的是netty，那么channel的真实类型是NioClientSocketChannel
     private volatile Channel channel; // volatile, please copy reference to use
 
     public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
+        //此处的handlers 是DecodeHandler
         super(url, wrapChannelHandler(url, handler));
     }
 

@@ -255,7 +255,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             if (invokerUrls.isEmpty()) {
                 return;
             }
-            //根据提供者的url将其转换为invoker,其中key=dubbo://172.16.10.53:20880/com.alibaba.dubbo.demo.DemoService?anyhost=true&application=demo-consumer&check=false&dubbo=2.0.2&generic=false&interface=com.alibaba.dubbo.demo.DemoService&methods=sayHello&pid=232892&qos.port=33333&register.ip=172.16.10.53&remote.timestamp=1568286676746&side=consumer&timestamp=1568292213076
+            //根据提供者的url将其转换为invoker,其中key=dubbo://172.16.10.53:20880/com.alibaba.dubbo.demo.DemoService?anyhost=true
+            // &application=demo-consumer&check=false&dubbo=2.0.2&generic=false&interface=com.alibaba.dubbo.demo.DemoService&methods=sayHello
+            // &pid=232892&qos.port=33333&register.ip=172.16.10.53&remote.timestamp=1568286676746&side=consumer&timestamp=1568292213076
             //value=InvokerDelegate
             Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
             //key=sayHello，value=List<InvokerDelegate>，key=*，value=List<InvokerDelegate>
@@ -269,6 +271,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             this.methodInvokerMap = multiGroup ? toMergeMethodInvokerMap(newMethodInvokerMap) : newMethodInvokerMap;
             this.urlInvokerMap = newUrlInvokerMap;
             try {
+                //关闭无效的invoker
                 destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
             } catch (Exception e) {
                 logger.warn("destroyUnusedInvokers error. ", e);
@@ -276,6 +279,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
     }
 
+    /**
+     * 把同一个方法的invokers中的属于相同组的invoker合并成一个MockClusterInvoker
+     * @param methodMap
+     * @return
+     */
     private Map<String, List<Invoker<T>>> toMergeMethodInvokerMap(Map<String, List<Invoker<T>>> methodMap) {
         Map<String, List<Invoker<T>>> result = new HashMap<String, List<Invoker<T>>>();
         for (Map.Entry<String, List<Invoker<T>>> entry : methodMap.entrySet()) {
@@ -296,6 +304,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             } else if (groupMap.size() > 1) {
                 List<Invoker<T>> groupInvokers = new ArrayList<Invoker<T>>();
                 for (List<Invoker<T>> groupList : groupMap.values()) {
+                    //此处的cluster的真实类型是clusterAdaptive，然后真实调用的是MockClusterWrapper
                     groupInvokers.add(cluster.join(new StaticDirectory<T>(groupList)));
                 }
                 result.put(method, groupInvokers);
@@ -339,7 +348,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     /**
      * Turn urls into invokers, and if url has been refer, will not re-reference.
-     *
+     * 返回url到invoker的关系，如果已经是之前引用过的，那么不用重新引用
      * @param urls
      * @return invokers
      */
@@ -352,6 +361,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         String queryProtocols = this.queryMap.get(Constants.PROTOCOL_KEY);
         for (URL providerUrl : urls) {
             // If protocol is configured at the reference side, only the matching protocol is selected
+            // 过滤掉服务端不支持的协议，比如，服务端可能只支持dubbo协议，但是从注册中心却获取到包含hession的url
             if (queryProtocols != null && queryProtocols.length() > 0) {
                 boolean accept = false;
                 String[] acceptProtocols = queryProtocols.split(",");
@@ -365,9 +375,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                     continue;
                 }
             }
+
+            //忽略协议为空的url
             if (Constants.EMPTY_PROTOCOL.equals(providerUrl.getProtocol())) {
                 continue;
             }
+
+            //校验客户端是否支持该协议
             if (!ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(providerUrl.getProtocol())) {
                 logger.error(new IllegalStateException("Unsupported protocol " + providerUrl.getProtocol() + " in notified url: " + providerUrl + " from registry " + getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost()
                         + ", supported protocol: " + ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
@@ -381,6 +395,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             keys.add(key);
             // Cache key is url that does not merge with consumer side parameters, regardless of how the consumer combines parameters, if the server url changes, then refer again
+            //如果之前已经创建的invoker,则不用重新引用，否则需要需要引用，因为有些提供者有可能是后来才添加的
             Map<String, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
             Invoker<T> invoker = localUrlInvokerMap == null ? null : localUrlInvokerMap.get(key);
             if (invoker == null) { // Not in the cache, refer again
@@ -416,7 +431,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @return
      */
     private URL mergeUrl(URL providerUrl) {
-        //往服务提供者上合并服务消费者参数
+        //合并一些消费者侧的配置信息
         providerUrl = ClusterUtils.mergeUrl(providerUrl, queryMap); // Merge the consumer side parameters
 
         List<Configurator> localConfigurators = this.configurators; // local reference
@@ -426,6 +441,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
         }
 
+        //添加链接校验属性
         providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
 
         // The combination of directoryUrl and override is at the end of notify, which can't be handled here
@@ -465,7 +481,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     /**
      * Transform the invokers list into a mapping relationship with a method
-     *
+     * 转换方法名到执行者invoker列表，并且根据路由规则过滤invoker
      * @param invokersMap Invoker Map
      * @return Mapping relation between Invoker and method
      */
@@ -536,16 +552,18 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     /**
      * Check whether the invoker in the cache needs to be destroyed
      * If set attribute of url: refer.autodestroy=false, the invokers will only increase without decreasing,there may be a refer leak
-     *
+     * 校验本地缓存中的invoker是否应该被销毁，
      * @param oldUrlInvokerMap
      * @param newUrlInvokerMap
      */
     private void destroyUnusedInvokers(Map<String, Invoker<T>> oldUrlInvokerMap, Map<String, Invoker<T>> newUrlInvokerMap) {
         if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
+            //如果新获取到的url到invoker关系为空，那么销毁之前所有的本地invoker
             destroyAllInvokers();
             return;
         }
         // check deleted invoker
+        //统计在本地缓存中有的invoker，但是在最新获取列表中没有的invoker
         List<String> deleted = null;
         if (oldUrlInvokerMap != null) {
             Collection<Invoker<T>> newInvokers = newUrlInvokerMap.values();
@@ -559,6 +577,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
         }
 
+        //如果存在这样的invoker，这全部销毁
         if (deleted != null) {
             for (String url : deleted) {
                 if (url != null) {
@@ -627,6 +646,23 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             return false;
         }
         Map<String, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
+        /**
+         * key=dubbo://172.16.10.53:20880/com.alibaba.dubbo.demo.DemoService?anyhost=true&application=demo-consumer&check=false&dubbo=2.0.2
+         * &generic=false&interface=com.alibaba.dubbo.demo.DemoService&methods=sayHello&monitor=dubbo%3A%2F%2F127.0.0.1%3A2181%2F
+         * com.alibaba.dubbo.registry.RegistryService%3Fapplication%3Ddemo-consumer%26dubbo%3D2.0.2%26pid%3D27528%26protocol%3Dregistry
+         * %26qos.port%3D33333%26refer%3Dapplication%253Ddemo-consumer%2526dubbo%253D2.0.2%2526interface%253Dcom.alibaba.dubbo.monitor.
+         * MonitorService%2526pid%253D27528%2526qos.port%253D33333%2526register.ip%253D172.16.10.53%2526timestamp%253D1579011845640%26registry
+         * %3Dzookeeper%26timestamp%3D1579011845572&pid=27528&qos.port=33333&register.ip=172.16.10.53&remote.timestamp=1578996226466&side=consumer&timestamp=1579011845437
+         * value=InvokerDelegate
+         *
+         * key=dubbo://172.16.10.53:20880/com.alibaba.dubbo.demo.DemoService?anyhost=true&application=demo-consumer&check=false&dubbo=2.0.2
+         * &generic=false&interface=com.alibaba.dubbo.demo.DemoService&methods=sayHello&monitor=dubbo%3A%2F%2F127.0.0.1%3A2181%2F
+         * com.alibaba.dubbo.registry.RegistryService%3Fapplication%3Ddemo-consumer%26dubbo%3D2.0.2%26pid%3D27528%26protocol%3Dregistry
+         * %26qos.port%3D33333%26refer%3Dapplication%253Ddemo-consumer%2526dubbo%253D2.0.2%2526interface%253Dcom.alibaba.dubbo.monitor.
+         * MonitorService%2526pid%253D27528%2526qos.port%253D33333%2526register.ip%253D172.16.10.53%2526timestamp%253D1579011845640%26registry
+         * %3Dzookeeper%26timestamp%3D1579011845572&pid=27528&qos.port=33333&register.ip=172.16.10.53&remote.timestamp=1578996228257&side=consumer&timestamp=1579011845437
+         * value=InvokerDelegate
+         */
         if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
             for (Invoker<T> invoker : new ArrayList<Invoker<T>>(localUrlInvokerMap.values())) {
                 if (invoker.isAvailable()) {

@@ -30,6 +30,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
     private final Invoker<?> invoker;
 
     public InvokerInvocationHandler(Invoker<?> handler) {
+        //对于服务消费者，handler的实际类型是MockClusterInvoker
         this.invoker = handler;
     }
 

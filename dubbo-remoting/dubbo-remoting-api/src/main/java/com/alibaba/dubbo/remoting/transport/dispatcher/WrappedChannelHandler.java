@@ -45,6 +45,7 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
     protected final URL url;
 
     public WrappedChannelHandler(ChannelHandler handler, URL url) {
+        //对于服务导出，那么此处的handler的类型为DecodeHandler
         this.handler = handler;
         this.url = url;
         executor = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);

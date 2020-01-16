@@ -51,6 +51,7 @@ public class TraceFilter implements Filter {
     private static final ConcurrentMap<String, Set<Channel>> tracers = new ConcurrentHashMap<String, Set<Channel>>();
 
     public static void addTracer(Class<?> type, String method, Channel channel, int max) {
+        //telnet追踪
         channel.setAttribute(TRACE_MAX, max);
         channel.setAttribute(TRACE_COUNT, new AtomicInteger());
         String key = method != null && method.length() > 0 ? type.getName() + "." + method : type.getName();

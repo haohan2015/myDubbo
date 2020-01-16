@@ -226,7 +226,8 @@ public class DubboProtocol extends AbstractProtocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        //获取provider的url
+        //此处的invoker的实际类型是InvokerDelegete，他是RegistryProtocol的内部类
+        //获取provider的url，该出的url是protocol=dubbo的服务导出url
         URL url = invoker.getUrl();
 
         // export service.
@@ -309,7 +310,7 @@ public class DubboProtocol extends AbstractProtocol {
         ExchangeServer server;
         try {
             //开启服务器，requestHandler的类型是ExchangeHandlerAdapter
-            // 创建 ExchangeServer
+            // 创建 ExchangeServer，此处server的真实类型是HeaderExchangeServer
             server = Exchangers.bind(url, requestHandler);
         } catch (RemotingException e) {
             throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
@@ -364,6 +365,8 @@ public class DubboProtocol extends AbstractProtocol {
 
     @Override
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
+        //此处的serviceType的类型是com.alibaba.dubbo.demo.DemoService
+        //url的protocol=dubbo
         optimizeSerialization(url);
         // create rpc invoker.
         // 创建 DubboInvoker
@@ -387,8 +390,10 @@ public class DubboProtocol extends AbstractProtocol {
         ExchangeClient[] clients = new ExchangeClient[connections];
         for (int i = 0; i < clients.length; i++) {
             if (service_share_connect) {
+                // 获取共享客户端
                 clients[i] = getSharedClient(url);
             } else {
+                // 初始化新的客户端
                 clients[i] = initClient(url);
             }
         }

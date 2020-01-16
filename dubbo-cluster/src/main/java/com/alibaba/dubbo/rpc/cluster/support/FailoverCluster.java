@@ -31,6 +31,7 @@ public class FailoverCluster implements Cluster {
 
     @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+        //此处的directory的真实类型是StaticDirectory
         return new FailoverClusterInvoker<T>(directory);
     }
 

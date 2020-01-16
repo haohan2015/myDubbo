@@ -78,7 +78,7 @@ public class Transporters {
             // 如果 handler 数量大于1，则创建一个 ChannelHandler 分发器
             handler = new ChannelHandlerDispatcher(handlers);
         }
-        // 获取 Transporter 自适应拓展类，并调用 connect 方法生成 Client 实例
+        // 获取 Transporter 自适应拓展类，并调用 connect 方法生成 Client 实例，实际调用的是NettyTransporter
         return getTransporter().connect(url, handler);
     }
 

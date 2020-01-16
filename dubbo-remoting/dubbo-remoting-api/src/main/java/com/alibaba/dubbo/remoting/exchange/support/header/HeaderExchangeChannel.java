@@ -39,7 +39,7 @@ import java.net.InetSocketAddress;
 final class HeaderExchangeChannel implements ExchangeChannel {
 
     private static final Logger logger = LoggerFactory.getLogger(HeaderExchangeChannel.class);
-
+    //com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeChannel.CHANNEL
     private static final String CHANNEL_KEY = HeaderExchangeChannel.class.getName() + ".CHANNEL";
 
     private final Channel channel;
