@@ -30,7 +30,7 @@ import java.util.List;
 
 /**
  * BroadcastClusterInvoker
- *
+ * 该类通常用于通知所有提供者更新缓存或日志等本地资源信息
  */
 public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
@@ -43,12 +43,14 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+        //基本校验
         checkInvokers(invokers, invocation);
         RpcContext.getContext().setInvokers((List) invokers);
         RpcException exception = null;
         Result result = null;
         for (Invoker<T> invoker : invokers) {
             try {
+                // 进行远程调用
                 result = invoker.invoke(invocation);
             } catch (RpcException e) {
                 exception = e;
@@ -58,6 +60,7 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 logger.warn(e.getMessage(), e);
             }
         }
+        // exception 不为空，则抛出异常
         if (exception != null) {
             throw exception;
         }
