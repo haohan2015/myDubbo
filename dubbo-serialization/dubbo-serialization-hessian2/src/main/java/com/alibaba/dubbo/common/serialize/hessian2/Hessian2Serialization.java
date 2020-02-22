@@ -41,6 +41,7 @@ public class Hessian2Serialization implements Serialization {
 
     @Override
     public ObjectOutput serialize(URL url, OutputStream out) throws IOException {
+        //此处的out的实际类型是 ChannelBufferOutputStream
         return new Hessian2ObjectOutput(out);
     }
 

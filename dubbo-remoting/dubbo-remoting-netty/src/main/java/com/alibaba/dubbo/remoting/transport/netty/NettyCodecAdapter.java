@@ -80,6 +80,7 @@ final class NettyCodecAdapter {
                     com.alibaba.dubbo.remoting.buffer.ChannelBuffers.dynamicBuffer(1024);
             NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
             try {
+                //此处的codec的真是类型是DubboCountCodec
                 codec.encode(channel, buffer, msg);
             } finally {
                 NettyChannel.removeChannelIfDisconnected(ch);

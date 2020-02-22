@@ -36,6 +36,7 @@ public abstract class AbstractCodec implements Codec2 {
     private static final Logger logger = LoggerFactory.getLogger(AbstractCodec.class);
 
     protected static void checkPayload(Channel channel, long size) throws IOException {
+        //此处的channel的实际类型是NettyChannel
         int payload = Constants.DEFAULT_PAYLOAD;
         if (channel != null && channel.getUrl() != null) {
             payload = channel.getUrl().getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
@@ -48,6 +49,7 @@ public abstract class AbstractCodec implements Codec2 {
     }
 
     protected Serialization getSerialization(Channel channel) {
+        //此处的channel的实际类型是NettyChannel
         return CodecSupport.getSerialization(channel.getUrl());
     }
 

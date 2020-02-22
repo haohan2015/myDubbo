@@ -74,6 +74,7 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
+        //此处的invoker的实际类型是ProtocolFilterWrapper类生成的一连串过滤器，最后调用的是真实的invoker
         return invoker.invoke(invocation);
     }
 

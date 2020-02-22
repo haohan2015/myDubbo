@@ -35,6 +35,7 @@ public final class DubboCountCodec implements Codec2 {
 
     @Override
     public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
+        //此处的channle类型是NettyChannel
         codec.encode(channel, buffer, msg);
     }
 

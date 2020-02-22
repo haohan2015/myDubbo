@@ -158,6 +158,7 @@ public class NettyClient extends AbstractClient {
 
     @Override
     protected com.alibaba.dubbo.remoting.Channel getChannel() {
+        //此处的channle类型是NioClientSocketChannel
         Channel c = channel;
         if (c == null || !c.isConnected())
             return null;

@@ -29,6 +29,7 @@ public class Hessian2ObjectOutput implements ObjectOutput {
     private final Hessian2Output mH2o;
 
     public Hessian2ObjectOutput(OutputStream os) {
+        //此处的out的实际类型是 ChannelBufferOutputStream
         mH2o = new Hessian2Output(os);
         mH2o.setSerializerFactory(Hessian2SerializerFactory.SERIALIZER_FACTORY);
     }

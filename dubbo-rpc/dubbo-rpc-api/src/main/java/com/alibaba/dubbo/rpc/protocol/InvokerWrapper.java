@@ -53,6 +53,7 @@ public class InvokerWrapper<T> implements Invoker<T> {
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
+        //此处的invoker实际类型是ListenerInvokerWrapper
         return invoker.invoke(invocation);
     }
 
