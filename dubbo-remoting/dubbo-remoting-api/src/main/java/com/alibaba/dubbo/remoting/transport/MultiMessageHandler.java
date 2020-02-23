@@ -38,6 +38,7 @@ public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
         if (message instanceof MultiMessage) {
             MultiMessage list = (MultiMessage) message;
             for (Object obj : list) {
+                //对于服务提供者 此处的handler的真实类型是HeartbeatHandler
                 handler.received(channel, obj);
             }
         } else {

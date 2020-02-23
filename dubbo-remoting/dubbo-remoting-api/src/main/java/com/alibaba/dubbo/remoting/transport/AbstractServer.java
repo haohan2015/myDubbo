@@ -192,12 +192,14 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
     @Override
     public void connected(Channel ch) throws RemotingException {
         // If the server has entered the shutdown process, reject any new connection
+        //如果在消费者链接提供者的过程中，提供者正在关闭或者已经关闭，那么直接拒绝连接
         if (this.isClosing() || this.isClosed()) {
             logger.warn("Close new channel " + ch + ", cause: server is closing or has been closed. For example, receive a new connect request while in shutdown process.");
             ch.close();
             return;
         }
 
+        //如果服务端的链接数已经大于最大配置，则直接拒链接
         Collection<Channel> channels = getChannels();
         if (accepts > 0 && channels.size() > accepts) {
             logger.error("Close channel " + ch + ", cause: The server " + ch.getLocalAddress() + " connections greater than max config " + accepts);

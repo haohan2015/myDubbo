@@ -104,6 +104,7 @@ final class NettyCodecAdapter {
 
             ChannelBuffer input = (ChannelBuffer) o;
             int readable = input.readableBytes();
+            //忽略请求数据为空的情况
             if (readable <= 0) {
                 return;
             }
@@ -121,6 +122,7 @@ final class NettyCodecAdapter {
                     message.writeBytes(input.toByteBuffer());
                 }
             } else {
+                //此处message的真实类型是HeapChannelBuffer
                 message = com.alibaba.dubbo.remoting.buffer.ChannelBuffers.wrappedBuffer(
                         input.toByteBuffer());
             }
@@ -134,6 +136,7 @@ final class NettyCodecAdapter {
                 do {
                     saveReaderIndex = message.readerIndex();
                     try {
+                        //此处的codec的真是类型是DubboCountCodec
                         msg = codec.decode(channel, message);
                     } catch (IOException e) {
                         buffer = com.alibaba.dubbo.remoting.buffer.ChannelBuffers.EMPTY_BUFFER;

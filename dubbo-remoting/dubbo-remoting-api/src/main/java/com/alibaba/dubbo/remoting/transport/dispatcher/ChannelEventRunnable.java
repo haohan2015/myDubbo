@@ -31,6 +31,7 @@ public class ChannelEventRunnable implements Runnable {
     private final Object message;
 
     public ChannelEventRunnable(Channel channel, ChannelHandler handler, ChannelState state) {
+        //此处的channel的真实类型是NettyChannel handler的真实类型是DecodeHandler 对于消费者链接提供者来说state就是ChannelState.CONNECTED
         this(channel, handler, state, null);
     }
 
@@ -43,6 +44,7 @@ public class ChannelEventRunnable implements Runnable {
     }
 
     public ChannelEventRunnable(Channel channel, ChannelHandler handler, ChannelState state, Object message, Throwable exception) {
+        //此处的channel的真实类型是NettyChannel handler的真实类型是DecodeHandler 对于消费者链接提供者来说state就是ChannelState.CONNECTED
         this.channel = channel;
         this.handler = handler;
         this.state = state;
@@ -64,6 +66,7 @@ public class ChannelEventRunnable implements Runnable {
             case CONNECTED:
                 try {
                     //AbstractChannelHandlerDelegate
+                    //此处handler的真实类型是DecodeHandler，但是因为覆盖父类AbstractChannelHandlerDelegate的connected方法，所以还是调用的父类AbstractChannelHandlerDelegate
                     handler.connected(channel);
                 } catch (Exception e) {
                     logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel, e);

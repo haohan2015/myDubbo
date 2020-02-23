@@ -63,13 +63,17 @@ public class NettyHandler extends SimpleChannelHandler {
 
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        //存储NioAcceptedSocketChannel到NettyChannel的映射关系
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.getChannel(), url, handler);
         try {
             if (channel != null) {
+                //储存ip+port到NettyChannel的映射关系
                 channels.put(NetUtils.toAddressString((InetSocketAddress) ctx.getChannel().getRemoteAddress()), channel);
             }
+            //对于服务提供者 此处handler的真实类型是NettyServer，但是因为没有覆盖父类方法，所以实际调用的是AbstractServer
             handler.connected(channel);
         } finally {
+            //如果有一些通道在链接的过程中关闭链接，那么也要移除这些链接
             NettyChannel.removeChannelIfDisconnected(ctx.getChannel());
         }
     }
@@ -89,6 +93,7 @@ public class NettyHandler extends SimpleChannelHandler {
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.getChannel(), url, handler);
         try {
+            //对于服务提供者 此处handler的真实类型是NettyServer，但是因为没有覆盖父类方法，所以实际调用的是AbstractPeer
             handler.received(channel, e.getMessage());
         } finally {
             NettyChannel.removeChannelIfDisconnected(ctx.getChannel());

@@ -82,6 +82,7 @@ public class ExchangeCodec extends TelnetCodec {
 
     @Override
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
+        //此处channel的真实类型是NettyChannel buffer的真实类型是HeapChannelBuffer
         int readable = buffer.readableBytes();
         byte[] header = new byte[Math.min(readable, HEADER_LENGTH)];
         buffer.readBytes(header);

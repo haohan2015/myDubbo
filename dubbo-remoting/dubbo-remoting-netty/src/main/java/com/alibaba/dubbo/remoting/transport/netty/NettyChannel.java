@@ -54,7 +54,8 @@ final class NettyChannel extends AbstractChannel {
     }
 
     static NettyChannel getOrAddChannel(org.jboss.netty.channel.Channel ch, URL url, ChannelHandler handler) {
-        //此处的channle类型是NioClientSocketChannel handler的真实类型是NettyClient
+        //如果是消费者，此处的channle类型是NioClientSocketChannel，那么handler的真实类型是NettyClient，
+        // 如果是服务提供者，此处的channle类型是NioAcceptedSocketChannel，那么handler的真实类型是NettyServer
         if (ch == null) {
             return null;
         }

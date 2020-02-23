@@ -123,9 +123,11 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
 
     @Override
     public void connected(Channel ch) throws RemotingException {
+        //此处channel的真实类型是NettyChannel
         if (closed) {
             return;
         }
+        //对于服务提供者，此处的handler的真实类型是MultiMessageHandler，因为没有覆盖父类方法，所以实际调用的是AbstractChannelHandlerDelegate
         handler.connected(ch);
     }
 
@@ -147,6 +149,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
         if (closed) {
             return;
         }
+        //对于服务提供者 此处的handler的真实类型是MultiMessageHandler
         handler.received(ch, msg);
     }
 

@@ -39,8 +39,10 @@ public class AllChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void connected(Channel channel) throws RemotingException {
+        //此处的channel的真实类型是NettyChannel
         ExecutorService cexecutor = getExecutorService();
         try {
+            //此处handler的真实类型是DecodeHandler
             cexecutor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CONNECTED));
         } catch (Throwable t) {
             throw new ExecutionException("connect event", channel, getClass() + " error when process connected event .", t);

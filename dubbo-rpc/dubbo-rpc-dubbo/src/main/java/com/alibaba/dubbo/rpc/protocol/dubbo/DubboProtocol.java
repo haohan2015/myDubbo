@@ -119,6 +119,7 @@ public class DubboProtocol extends AbstractProtocol {
 
         @Override
         public void connected(Channel channel) throws RemotingException {
+            //对于服务提供者来说 此处的channel的真实类型是HeaderExchangeChannel
             invoke(channel, Constants.ON_CONNECT_KEY);
         }
 
@@ -131,6 +132,8 @@ public class DubboProtocol extends AbstractProtocol {
         }
 
         private void invoke(Channel channel, String methodKey) {
+            //对于服务提供者来说 此处的channel的真实类型是HeaderExchangeChannel 对于消费者链接提供者来说methodKey=onconnect
+            //对于链接事件来说不需要做什么处理，所以此处返回的invocation是null
             Invocation invocation = createInvocation(channel, channel.getUrl(), methodKey);
             if (invocation != null) {
                 try {
@@ -142,6 +145,7 @@ public class DubboProtocol extends AbstractProtocol {
         }
 
         private Invocation createInvocation(Channel channel, URL url, String methodKey) {
+            //对于服务提供者来说 此处的channel的真实类型是HeaderExchangeChannel 对于消费者链接提供者来说methodKey=onconnect
             String method = url.getParameter(methodKey);
             if (method == null || method.length() == 0) {
                 return null;

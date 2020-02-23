@@ -41,6 +41,7 @@ public abstract class AbstractChannelHandlerDelegate implements ChannelHandlerDe
     @Override
     public void connected(Channel channel) throws RemotingException {
         //HeaderExchangeHandler
+        //如果是服务提供者，那么此处handler的真实类型是HeaderExchangeHandler，channel的真实类型是NettyChannel
         handler.connected(channel);
     }
 

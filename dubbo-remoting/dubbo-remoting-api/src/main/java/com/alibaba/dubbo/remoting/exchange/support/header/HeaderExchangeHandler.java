@@ -110,6 +110,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         channel.setAttribute(KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         try {
+            //对于服务提供者来说 此处handler的真实类型是DubboProtocol
             handler.connected(exchangeChannel);
         } finally {
             HeaderExchangeChannel.removeChannelIfDisconnected(channel);

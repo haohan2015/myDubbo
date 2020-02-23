@@ -42,8 +42,11 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
 
     @Override
     public void connected(Channel channel) throws RemotingException {
+        //设置如时间戳
         setReadTimestamp(channel);
+        //设置写时间戳
         setWriteTimestamp(channel);
+        //此处的handler的真实类型是 AllChannelHandler
         handler.connected(channel);
     }
 
@@ -86,6 +89,7 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
             }
             return;
         }
+        //对于服务提供者 handler的真实类型是AllChannelHandler
         handler.received(channel, message);
     }
 

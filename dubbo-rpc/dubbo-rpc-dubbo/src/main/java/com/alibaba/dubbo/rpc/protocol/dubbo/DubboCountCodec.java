@@ -44,6 +44,7 @@ public final class DubboCountCodec implements Codec2 {
         int save = buffer.readerIndex();
         MultiMessage result = MultiMessage.create();
         do {
+            //此处的codec的真实类型是DubboCodec，但是因为没有覆盖父类的方法，所以此处调用的是父类ExchangeCodec的方法
             Object obj = codec.decode(channel, buffer);
             if (Codec2.DecodeResult.NEED_MORE_INPUT == obj) {
                 buffer.readerIndex(save);
