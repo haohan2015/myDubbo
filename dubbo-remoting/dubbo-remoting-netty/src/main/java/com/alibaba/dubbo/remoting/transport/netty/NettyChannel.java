@@ -98,7 +98,8 @@ final class NettyChannel extends AbstractChannel {
 
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
-        //此处的message的真实类型是Request
+        //对于服务消费者 此处的message的真实类型是Request
+        //对于服务提供者 此处的message的真实类型是Response
         super.send(message, sent);
 
         boolean success = true;

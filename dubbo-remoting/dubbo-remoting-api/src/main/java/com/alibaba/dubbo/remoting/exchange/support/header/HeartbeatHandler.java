@@ -89,7 +89,7 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
             }
             return;
         }
-        //对于服务提供者 handler的真实类型是AllChannelHandler
+        //对于服务提供者和消费者 handler的真实类型是AllChannelHandler
         handler.received(channel, message);
     }
 

@@ -42,6 +42,7 @@ public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
                 handler.received(channel, obj);
             }
         } else {
+            //对于服务消费者 此处的handler的真实类型是HeartbeatHandler，message的真实类型是response
             handler.received(channel, message);
         }
     }

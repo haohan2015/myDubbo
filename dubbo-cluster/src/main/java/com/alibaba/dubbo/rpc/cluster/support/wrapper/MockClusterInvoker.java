@@ -76,7 +76,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
             // 比如 FailoverClusterInvoker
             // 无 mock 逻辑，直接调用其他 Invoker 对象的 invoke 方法，
             // no mock
-            //此处的invoker实际类型是AbstractClusterInvoker
+            //此处的invoker实际类型是FailoverClusterInvoker 但是因为没有覆盖invoke 所以还是调用的父类AbstractClusterInvoker
             result = this.invoker.invoke(invocation);
         } else if (value.startsWith("force")) {
             if (logger.isWarnEnabled()) {

@@ -51,7 +51,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
         if ("equals".equals(methodName) && parameterTypes.length == 1) {
             return invoker.equals(args[0]);
         }
-        // 将 method 和 args 封装到 RpcInvocation 中，并执行后续的调用，此处的invoker的实际类型是MockClusterInvoker
+        // 将 method 和 args 封装到 RpcInvocation 中，并执行后续的调用，此处的invoker的实际类型是MockClusterInvoker，此处返回的真实类型是Result
         return invoker.invoke(new RpcInvocation(method, args)).recreate();
     }
 

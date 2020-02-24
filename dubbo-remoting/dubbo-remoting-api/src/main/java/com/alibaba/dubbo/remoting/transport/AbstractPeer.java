@@ -51,8 +51,8 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
 
     @Override
     public void send(Object message) throws RemotingException {
-        //此处message的真实类型是Request
-        // 该方法由 AbstractClient 类实现
+        //对于服务消费者 此处message的真实类型是Request 该方法由 AbstractClient 类实现
+        //对于服务消费者 此处的message的真实类型是Response 该方法又子类NettyChannel实现
         send(message, url.getParameter(Constants.SENT_KEY, false));
     }
 
@@ -149,7 +149,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
         if (closed) {
             return;
         }
-        //对于服务提供者 此处的handler的真实类型是MultiMessageHandler
+        //对于服务提供者和消费者 此处的handler的真实类型是MultiMessageHandler，msg的真实类型是Request
         handler.received(ch, msg);
     }
 

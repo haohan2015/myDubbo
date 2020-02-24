@@ -94,6 +94,7 @@ public class NettyHandler extends SimpleChannelHandler {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.getChannel(), url, handler);
         try {
             //对于服务提供者 此处handler的真实类型是NettyServer，但是因为没有覆盖父类方法，所以实际调用的是AbstractPeer
+            //对于服务消费者 此处handler的真实类型是NettyClient，但是因为没有覆盖父类方法，所以实际调用的是AbstractPeer
             handler.received(channel, e.getMessage());
         } finally {
             NettyChannel.removeChannelIfDisconnected(ctx.getChannel());

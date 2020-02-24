@@ -58,6 +58,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
     static void handleResponse(Channel channel, Response response) throws RemotingException {
         if (response != null && !response.isHeartbeat()) {
+            // 继续向下调用
             DefaultFuture.received(channel, response);
         }
     }
@@ -77,7 +78,9 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     }
 
     Response handleRequest(ExchangeChannel channel, Request req) throws RemotingException {
+        //对于服务提供者 此处的channel的真实类型是HeaderExchangeChannel
         Response res = new Response(req.getId(), req.getVersion());
+        // 检测请求是否合法，不合法则返回状态码为 BAD_REQUEST 的响应
         if (req.isBroken()) {
             Object data = req.getData();
 
@@ -86,18 +89,25 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             else if (data instanceof Throwable) msg = StringUtils.toString((Throwable) data);
             else msg = data.toString();
             res.setErrorMessage("Fail to decode request due to: " + msg);
+            // 设置 BAD_REQUEST 状态
             res.setStatus(Response.BAD_REQUEST);
 
             return res;
         }
         // find handler by message class.
+        // 获取 data 字段值，如果是服务提供者，此处msg的真实类型是DecodeableRpcInvocation
         Object msg = req.getData();
         try {
             // handle data.
+            //对于服务提供者 次数的handler的真实类型是 DubboProtocol的匿名内部类ExchangeHandlerAdapter的属性requestHandler channel的真实类型是HeaderExchangeChannel
+            // 继续向下调用
             Object result = handler.reply(channel, msg);
+            // 设置 OK 状态码
             res.setStatus(Response.OK);
+            // 设置调用结果
             res.setResult(result);
         } catch (Throwable e) {
+            // 若调用过程出现异常，则设置 SERVICE_ERROR，表示服务端异常
             res.setStatus(Response.SERVICE_ERROR);
             res.setErrorMessage(StringUtils.toString(e));
         }
@@ -159,28 +169,44 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             }
         }
     }
-
+    /**
+     *
+     * @author admin
+     * @date 2020/2/24 14:25
+     * @description 该方法主要是提现出request和response的概念
+     * @return void
+     */
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
+        //对于服务提供者 此处的channel的真实类型是NettyChannel
         channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         try {
+            // 处理请求对象
             if (message instanceof Request) {
                 // handle request.
                 Request request = (Request) message;
                 if (request.isEvent()) {
+                    // 处理事件
                     handlerEvent(channel, request);
                 } else {
+                    // 处理普通的请求
+                    // 双向通信
                     if (request.isTwoWay()) {
+                        // 向后调用服务，并得到调用结果
                         Response response = handleRequest(exchangeChannel, request);
+                        // 将调用结果返回给服务消费端，对于服务提供者 此处的channel的真实类型是NettyChannel，由于该类没有覆盖方法send，所以实际上还是调用的父类AbstractPeer
                         channel.send(response);
                     } else {
+                        // 如果是单向通信，仅向后调用指定服务即可，无需返回调用结果
                         handler.received(exchangeChannel, request.getData());
                     }
                 }
             } else if (message instanceof Response) {
+                // 处理响应对象，服务消费方会执行此处逻辑
                 handleResponse(channel, (Response) message);
             } else if (message instanceof String) {
+                // telnet 相关
                 if (isClientSide(channel)) {
                     Exception e = new Exception("Dubbo client can not supported string message: " + message + " in channel: " + channel + ", url: " + channel.getUrl());
                     logger.error(e.getMessage(), e);

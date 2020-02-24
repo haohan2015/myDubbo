@@ -53,7 +53,8 @@ public class InvokerWrapper<T> implements Invoker<T> {
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
-        //此处的invoker实际类型是ListenerInvokerWrapper
+        //对于服务消费者 此处的invoker实际类型是ListenerInvokerWrapper
+        //对于服务提供者 此处的invoker的真实类型是DelegateProviderMetaDataInvoker
         return invoker.invoke(invocation);
     }
 

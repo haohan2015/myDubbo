@@ -49,6 +49,8 @@ public class DelegateProviderMetaDataInvoker<T> implements Invoker {
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
+        //服务提供者 此处invoker的真实类型是JavassistProxyFactory的getInvoker方法生成的AbstractProxyInvoker的匿名类，
+        // 因为该类没有覆盖父类的AbstractProxyInvoker方法，所以实际上调用的还是AbstractProxyInvoker
         return invoker.invoke(invocation);
     }
 
