@@ -171,6 +171,7 @@ public class ConfigUtils {
         return getProperty(key, null);
     }
 
+    //获取指定Key对应的值，首先从系统属性中获取，如果没有获取到则从配置的Properties中获取
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static String getProperty(String key, String defaultValue) {
         String value = System.getProperty(key);

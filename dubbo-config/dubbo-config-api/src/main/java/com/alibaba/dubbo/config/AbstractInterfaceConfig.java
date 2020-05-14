@@ -52,30 +52,53 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     private static final long serialVersionUID = -1559314110797223229L;
 
-    // local impl class name for the service interface
+    /**
+     * local impl class name for the service interface
+     * 服务接口客户端本地代理类名，用于在客户端执行本地逻辑，如本地缓存等。
+     *
+     * 该本地代理类的构造函数必须允许传入远程代理对象，构造函数如：public XxxServiceLocal(XxxService xxxService)
+     *
+     * 设为 true，表示使用缺省代理类名，即：接口名 + Local 后缀
+     */
     protected String local;
 
-    // local stub class name for the service interface
+    /**
+     * local stub class name for the service interface
+     * 服务接口客户端本地代理类名，用于在客户端执行本地逻辑，如本地缓存等。
+     *
+     * 该本地代理类的构造函数必须允许传入远程代理对象，构造函数如：public XxxServiceStub(XxxService xxxService)
+     *
+     * 设为 true，表示使用缺省代理类名，即：接口名 + Stub 后缀
+     *
+     * 参见文档 <a href="本地存根">http://dubbo.io/books/dubbo-user-book/demos/local-stub.html</>
+     */
     protected String stub;
 
+    //监控器配置
     // service monitor
     protected MonitorConfig monitor;
 
+    //代理类型
     // proxy type
     protected String proxy;
 
+    //集群类型
     // cluster type
     protected String cluster;
 
+    //过滤器
     // filter
     protected String filter;
 
+    //监听器
     // listener
     protected String listener;
 
+    //拥有者
     // owner
     protected String owner;
 
+    //是否共享连接
     // connection limits, 0 means shared connection, otherwise it defines the connections delegated to the
     // current service
     protected Integer connections;
@@ -104,6 +127,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
     private String scope;
 
+    //校验注册中心
     protected void checkRegistry() {
         // for backward compatibility
         if (registries == null || registries.isEmpty()) {
@@ -128,12 +152,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     + Version.getVersion()
                     + ", Please add <dubbo:registry address=\"...\" /> to your spring config. If you want unregister, please set <dubbo:service registry=\"N/A\" />");
         }
-        //通过反射为注册中心的属性赋值
+        // 读取环境变量和 properties 配置到 RegistryConfig 对象数组。
         for (RegistryConfig registryConfig : registries) {
             appendProperties(registryConfig);
         }
     }
 
+    //Application校验
     @SuppressWarnings("deprecation")
     protected void checkApplication() {
         // for backward compatibility
@@ -190,7 +215,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
                 // 检测 address 是否合法
                 if (address.length() > 0 && !RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
-                    //注册中心的地址有一个有效的地址
+                    //注册中心的地址是一个有效的地址
                     Map<String, String> map = new HashMap<String, String>();
                     //通过反射把application中的属性添加到map
                     appendParameters(map, application);
@@ -241,14 +266,17 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return registryList;
     }
 
+    //加载监控中心
     protected URL loadMonitor(URL registryURL) {
         if (monitor == null) {
+            //从系统属性和配置中读取监控中心的地址和协议
             String monitorAddress = ConfigUtils.getProperty("dubbo.monitor.address");
             String monitorProtocol = ConfigUtils.getProperty("dubbo.monitor.protocol");
             if ((monitorAddress == null || monitorAddress.length() == 0) && (monitorProtocol == null || monitorProtocol.length() == 0)) {
                 return null;
             }
 
+            //创建监控中心
             monitor = new MonitorConfig();
             if (monitorAddress != null && monitorAddress.length() > 0) {
                 monitor.setAddress(monitorAddress);
@@ -257,6 +285,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 monitor.setProtocol(monitorProtocol);
             }
         }
+        //设置监控中心属性
         appendProperties(monitor);
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.INTERFACE_KEY, MonitorService.class.getName());

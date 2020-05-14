@@ -54,6 +54,7 @@ public class ProtocolConfig extends AbstractConfig {
     // service port
     private Integer port;
 
+    //上下文路径
     // context path
     private String contextpath;
 
@@ -72,6 +73,8 @@ public class ProtocolConfig extends AbstractConfig {
     // IO thread pool size (fixed size)
     private Integer iothreads;
 
+    //线程池队列大小，当线程池满时，排队等待执行的队列大小，建议不要设置，当线程池满时应立即失败，重试其它服务提供机器，
+    // 而不是排队，除非有特殊需求，默认是0
     // thread pool's queue length
     private Integer queues;
 
@@ -84,9 +87,11 @@ public class ProtocolConfig extends AbstractConfig {
     // protocol codec
     private String codec;
 
+    //序列化方式
     // serialization
     private String serialization;
 
+    //编码格式
     // charset
     private String charset;
 
@@ -95,21 +100,28 @@ public class ProtocolConfig extends AbstractConfig {
     // payload max length
     private Integer payload;
 
+    //网络读写缓冲区大小
     // buffer size
     private Integer buffer;
 
+    //心跳间隔，对于长连接，当物理层断开时，比如拔网线，
+    // TCP的FIN消息来不及发送，对方收不到断开事件，
+    // 此时需要心跳来帮助检查连接是否已断开，默认0
     // heartbeat interval
     private Integer heartbeat;
 
+    //访问日志地址
     // access log
     private String accesslog;
 
+    //网络传输协议，dubbo协议缺省值为netty
     // transfort
     private String transporter;
 
     // how information is exchanged
     private String exchanger;
 
+    //协议的消息派发方式，用于指定线程模型，比如：dubbo协议的all, direct, message, execution, connection等
     // thread dispatch mode
     private String dispatcher;
 
@@ -122,6 +134,7 @@ public class ProtocolConfig extends AbstractConfig {
     // client impl
     private String client;
 
+    //所支持的telnet命令，多个命令用逗号分隔
     // supported telnet commands, separated with comma.
     private String telnet;
 
@@ -131,6 +144,7 @@ public class ProtocolConfig extends AbstractConfig {
     // status check
     private String status;
 
+    //该协议的服务是否注册到注册中心
     // whether to register
     private Boolean register;
 

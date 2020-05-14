@@ -96,7 +96,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     /**
-     * 从系统属性中获取值设置到当前配置
+     * 从系统属性，XML，Properties中获取值设置到当前配置
      * @param config
      */
     protected static void appendProperties(AbstractConfig config) {

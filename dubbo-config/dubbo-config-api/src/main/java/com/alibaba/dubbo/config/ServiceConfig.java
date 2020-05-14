@@ -77,23 +77,59 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
 
+    //延迟暴露执行器
     private static final ScheduledExecutorService delayExportExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
+
+    //导出URL
     private final List<URL> urls = new ArrayList<URL>();
+
+    /**
+     * 服务配置暴露的 Exporter 。
+     * URL ：Exporter 不一定是 1：1 的关系。
+     * 例如 {@link #scope} 未设置时，会暴露 Local + Remote 两个，也就是 URL ：Exporter = 1：2
+     *      {@link #scope} 设置为空时，不会暴露，也就是 URL ：Exporter = 1：0
+     *      {@link #scope} 设置为 Local 或 Remote 任一时，会暴露 Local 或 Remote 一个，也就是 URL ：Exporter = 1：1
+     *
+     * 非配置。
+     */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
+
     // interface type
     private String interfaceName;
+
     private Class<?> interfaceClass;
+
     // reference to interface impl
     private T ref;
+
     // service name
     private String path;
+
     // method configuration
     private List<MethodConfig> methods;
+
     private ProviderConfig provider;
+
+    /**
+     * 是否已经暴露服务，参见 {@link #doExport()} 方法。
+     *
+     * 非配置。
+     */
     private transient volatile boolean exported;
 
+    /**
+     * 是否已取消暴露服务，参见 {@link #unexport()} 方法。
+     *
+     * 非配置。
+     */
     private transient volatile boolean unexported;
 
+    /**
+     * 是否泛化实现，参见 <a href="https://dubbo.gitbooks.io/dubbo-user-book/demos/generic-service.html">实现泛化调用</a>
+     * true / false
+     *
+     * 状态字段，非配置。
+     */
     private volatile String generic;
 
     public ServiceConfig() {
@@ -193,6 +229,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public synchronized void export() {
+        // 当 export 或者 delay ，从 ProviderConfig 对象读取。
         if (provider != null) {
             if (export == null) {
                 export = provider.getExport();
@@ -258,6 +295,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 protocols = provider.getProtocols();
             }
         }
+
+        // 从 ModuleConfig 对象中，读取 registries、monitor 配置对象。
         if (module != null) {
             //根据module为配置赋值
             if (registries == null) {
@@ -267,6 +306,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 monitor = module.getMonitor();
             }
         }
+
+        // 从 ApplicationConfig 对象中，读取 registries、monitor 配置对象。
         if (application != null) {
             //根据application为配置赋值
             if (registries == null) {
@@ -281,7 +322,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             //如果是泛化暴露服务，这是接口名称为泛化接口名称
             interfaceClass = GenericService.class;
             if (StringUtils.isEmpty(generic)) {
-                //付过泛化标识不为空，则设置泛化标识为true
+                //如果泛化标识不为空，则设置泛化标识为true
                 generic = Boolean.TRUE.toString();
             }
         } else {
@@ -329,7 +370,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            // 检测本地存根类是否可赋值给接口类，若不可赋值则会抛出异常，提醒使用者本地存根类类型不合法
+            // 检测本地存根类是否实现了给定接口类，若不可赋值则会抛出异常，提醒使用者本地存根类类型不合法
             if (!interfaceClass.isAssignableFrom(stubClass)) {
                 throw new IllegalStateException("The stub implementation class " + stubClass.getName() + " not implement interface " + interfaceName);
             }
@@ -350,6 +391,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
+
         //暴露服务
         doExportUrls();
 
@@ -432,6 +474,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         //把模块module的属性添加到map
         appendParameters(map, module);
         //把提供者provider的属性添加到map，并且设置key的前缀
+        // ProviderConfig ，为 ServiceConfig 的默认属性，因此添加 `default` 属性前缀。
         appendParameters(map, provider, Constants.DEFAULT_KEY);
         //把协议配置protocolConfig的属性添加到map
         appendParameters(map, protocolConfig);
@@ -500,7 +543,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                                                 // 从参数类型列表中查找类型名称为 argument.type 的参数
                                                 if (argclazz.getName().equals(argument.getType())) {
                                                     //如果相等则把参数属性添加到map，并且前缀为方法名加参数下标
-                                                    //比如map = {"sayHello.name.3": true}
+                                                    //比如map = {"sayHello.3": true}
                                                     appendParameters(map, argument, method.getName() + "." + j);
                                                     if (argument.getIndex() != -1 && argument.getIndex() != j) {
                                                         //不会走到这
@@ -578,7 +621,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         //创建服务暴露URL，此处的path类似com.alibaba.dubbo.demo.DemoService
         URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
 
-        //此处url.getProtocol()获取的是dubbo，此处返回的是false,不知道为什么
+        //此处url.getProtocol()获取的是dubbo，此处返回的是false, 配置规则 后续解读
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
                 .hasExtension(url.getProtocol())) {
             // 加载 ConfiguratorFactory，并生成 Configurator 实例，然后通过实例配置 url

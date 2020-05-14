@@ -35,24 +35,30 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     // version
     protected String version;
 
+    //服务分组
     // group
     protected String group;
 
     // whether the service is deprecated
     protected Boolean deprecated;
 
+    //延迟注册服务时间(毫秒) ，设为-1时，表示延迟到Spring容器初始化完成时暴露服务
     // delay service exporting
     protected Integer delay;
 
+    //是否导出服务
     // whether to export the service
     protected Boolean export;
 
+    //服务权重
     // weight
     protected Integer weight;
 
     // document center
     protected String document;
 
+    //服务是否动态注册，如果设为false，注册后将显示后disable状态，
+    // 需人工启用，并且服务提供者停止时，也不会自动取消册，需人工禁用。
     // whether to register as a dynamic service or not on register center
     protected Boolean dynamic;
 
@@ -62,8 +68,12 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     // access log
     protected String accesslog;
     protected List<ProtocolConfig> protocols;
+
+    //服务提供者每服务每方法最大可并行执行请求数
     // max allowed execute times
     private Integer executes;
+
+    //该协议的服务是否注册到注册中心
     // whether to register
     private Boolean register;
 

@@ -101,8 +101,8 @@ public abstract class AbstractConfigurator implements Configurator {
                     String key = entry.getKey();
                     String value = entry.getValue();
                     if (key.startsWith("~") || Constants.APPLICATION_KEY.equals(key) || Constants.SIDE_KEY.equals(key)) {
-                        // 当覆盖url中有以~开头的key，或者等于0.0.0.0，或者等于side时，
-                        // 并且对应的值不为空，也不等于任意事，和传入的url对应key的value不相等时，
+                        // 当覆盖url中有以~开头的key，或者等于application，或者等于side时，
+                        // 并且对应的值不为空，也不等于任意，和传入的url对应key的value不相等时，
                         // 直接返回当前url
                         conditionKeys.add(key);
                         if (value != null && !Constants.ANY_VALUE.equals(value)

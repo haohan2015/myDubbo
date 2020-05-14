@@ -31,33 +31,43 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 1L;
 
+    //远程调用的超时时间
     // timeout for remote invocation in milliseconds
     protected Integer timeout;
 
+    //重试次数
     // retry times
     protected Integer retries;
 
+    //每服务消费者最大并发调用限制
     // max concurrent invocations
     protected Integer actives;
 
+    //负载均衡策略，可选值：random,roundrobin,leastactive，分别表示：随机，轮询，最少活跃调用
     // load balance
     protected String loadbalance;
 
+    //是否异步执行，不可靠异步，只是忽略返回值，不阻塞执行线程
     // whether to async
     protected Boolean async;
 
+    //异步调用时，标记sent=true时，表示网络已发出数据
     // whether to ack async-sent
     protected Boolean sent;
 
+    //本地伪装
     // the name of mock class which gets called when a service fails to execute
     protected String mock;
 
+    //合并请求结果
     // merger
     protected String merger;
 
+    //以调用参数为key，缓存返回结果，可选：lru, threadlocal, jcache等
     // cache
     protected String cache;
 
+    //是否启用JSR303标准注解验证，如果启用，将对方法参数上的注解进行校验
     // validation
     protected String validation;
 
