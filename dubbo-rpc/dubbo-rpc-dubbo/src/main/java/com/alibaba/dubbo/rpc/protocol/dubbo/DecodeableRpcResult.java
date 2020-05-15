@@ -122,7 +122,7 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                 } catch (ClassNotFoundException e) {
                     throw new IOException(StringUtils.toString("Read response data failed.", e));
                 }
-
+                break;
                 // 异常对象不为空，且携带了 attachments 集合
             case DubboCodec.RESPONSE_WITH_EXCEPTION_WITH_ATTACHMENTS:
                 try {
