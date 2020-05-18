@@ -119,18 +119,24 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (Boolean.FALSE.equals(method.isReturn()) && (method.getOnreturn() != null || method.getOnthrow() != null)) {
             throw new IllegalStateException("method config error : return attribute must be set true when onreturn or onthrow has been setted.");
         }
+
+        //把onreturn指定的methodName字符串转换为方法实例
         //convert onreturn methodName to Method
         String onReturnMethodKey = StaticContext.getKey(map, method.getName(), Constants.ON_RETURN_METHOD_KEY);
         Object onReturnMethod = attributes.get(onReturnMethodKey);
         if (onReturnMethod instanceof String) {
             attributes.put(onReturnMethodKey, getMethodByName(method.getOnreturn().getClass(), onReturnMethod.toString()));
         }
+
+        //把onthrow指定的methodName字符串转换为方法实例
         //convert onthrow methodName to Method
         String onThrowMethodKey = StaticContext.getKey(map, method.getName(), Constants.ON_THROW_METHOD_KEY);
         Object onThrowMethod = attributes.get(onThrowMethodKey);
         if (onThrowMethod instanceof String) {
             attributes.put(onThrowMethodKey, getMethodByName(method.getOnthrow().getClass(), onThrowMethod.toString()));
         }
+
+        //把oninvoke指定的methodName字符串转换为方法实例
         //convert oninvoke methodName to Method
         String onInvokeMethodKey = StaticContext.getKey(map, method.getName(), Constants.ON_INVOKE_METHOD_KEY);
         Object onInvokeMethod = attributes.get(onInvokeMethodKey);
@@ -391,7 +397,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         map.put(Constants.REGISTER_IP_KEY, hostToRegistry);
 
         //attributes are stored by system context.
-        // 存储 attributes 到系统上下文中
+        // 存储 attributes 到系统上下文中，目的是事件通知
         StaticContext.getSystemContext().putAll(attributes);
         // 创建代理类
         ref = createProxy(map);

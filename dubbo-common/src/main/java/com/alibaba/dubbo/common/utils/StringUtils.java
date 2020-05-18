@@ -383,6 +383,12 @@ public final class StringUtils {
         return buf.toString();
     }
 
+    /**
+     * 把驼峰命名转换为-分隔的字符串，例如nameSpace转换为name-space
+     * @param camelName
+     * @param split
+     * @return
+     */
     public static String camelToSplitName(String camelName, String split) {
         if (camelName == null || camelName.length() == 0) {
             return camelName;
