@@ -68,7 +68,9 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
     public DubboConfigBindingBeanPostProcessor(String prefix, String beanName) {
         Assert.notNull(prefix, "The prefix of Configuration Properties must not be null");
         Assert.notNull(beanName, "The name of bean must not be null");
+        //此处的predix类似dubbo.application
         this.prefix = prefix;
+        //此处的beanName类似com.alibaba.dubbo.config.ApplicationConfig#0
         this.beanName = beanName;
     }
 
@@ -127,7 +129,7 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
 
     @Override
     public void afterPropertiesSet() throws Exception {
-
+        // 获得（创建）DubboConfigBinder 对象
         if (dubboConfigBinder == null) {
             try {
                 dubboConfigBinder = applicationContext.getBean(DubboConfigBinder.class);
