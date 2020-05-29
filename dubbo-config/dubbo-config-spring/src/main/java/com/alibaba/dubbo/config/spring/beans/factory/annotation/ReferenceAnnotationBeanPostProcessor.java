@@ -77,9 +77,11 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
 
     private ClassLoader classLoader;
 
+    //使用属性进行注入的 @Reference Bean 的缓存 Map
     private final ConcurrentMap<String, ReferenceInjectionMetadata> injectionMetadataCache =
             new ConcurrentHashMap<String, ReferenceInjectionMetadata>(256);
 
+    //ReferenceBean 缓存 Map
     private final ConcurrentMap<String, ReferenceBean<?>> referenceBeansCache =
             new ConcurrentHashMap<String, ReferenceBean<?>>();
 

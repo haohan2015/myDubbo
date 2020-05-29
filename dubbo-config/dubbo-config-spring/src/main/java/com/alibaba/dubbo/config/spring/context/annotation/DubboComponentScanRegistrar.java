@@ -70,10 +70,15 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
      */
     private void registerServiceAnnotationBeanPostProcessor(Set<String> packagesToScan, BeanDefinitionRegistry registry) {
 
+        // 创建 BeanDefinitionBuilder 对象
         BeanDefinitionBuilder builder = rootBeanDefinition(ServiceAnnotationBeanPostProcessor.class);
+        // 设置构造方法参数为 packagesToScan ，即 BeanDefinitionBuilder 扫描该包
         builder.addConstructorArgValue(packagesToScan);
+        // 设置 role 属性
         builder.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+        // 获得 AbstractBeanDefinition 对象
         AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
+        // 注册到 registry 中
         BeanDefinitionReaderUtils.registerWithGeneratedName(beanDefinition, registry);
 
     }
