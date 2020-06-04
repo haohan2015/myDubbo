@@ -26,7 +26,9 @@ import java.lang.annotation.Target;
 
 /**
  * Provide helpful information for {@link ExtensionLoader} to inject dependency extension instance.
- *
+ * 该注解可以添加到方法上，也可以添加到类上，当添加到方法上的时候是用来标识该接口需要生成自适应实现
+ * shen，并且获取在实际调用的过程中从url获取指定拓展实现的名称的key，当添加到类上的时候标识该类是一个自适应类，
+ * 目前只有AdaptiveExtensionFactory有该注解
  * @see ExtensionLoader
  * @see URL
  */
@@ -52,7 +54,7 @@ public @interface Adaptive {
      * class name with the rule: divide classname from capital char into several parts, and separate the parts with
      * dot '.', for example: for {@code com.alibaba.dubbo.xxx.YyyInvokerWrapper}, its default name is
      * <code>String[] {"yyy.invoker.wrapper"}</code>. This name will be used to search for parameter from URL.
-     *
+     * 从url中寻找拓展实现的名称，如果找不到就用拓展接口名称
      * @return parameter key names in URL
      */
     String[] value() default {};

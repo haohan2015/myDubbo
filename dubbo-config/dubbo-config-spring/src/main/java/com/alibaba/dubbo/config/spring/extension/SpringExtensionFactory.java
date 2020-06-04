@@ -33,6 +33,9 @@ import java.util.Set;
 public class SpringExtensionFactory implements ExtensionFactory {
     private static final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);
 
+    /**
+     * Spring Context 集合
+     */
     private static final Set<ApplicationContext> contexts = new ConcurrentHashSet<ApplicationContext>();
 
     public static void addApplicationContext(ApplicationContext context) {
@@ -51,6 +54,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getExtension(Class<T> type, String name) {
+        //先根据名称获取
         for (ApplicationContext context : contexts) {
             if (context.containsBean(name)) {
                 Object bean = context.getBean(name);
@@ -62,6 +66,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
 
         logger.warn("No spring extension(bean) named:" + name + ", try to find an extension(bean) of type " + type.getName());
 
+        //如果根据名称获取不到，再根据类型获取
         for (ApplicationContext context : contexts) {
             try {
                 return context.getBean(type);
