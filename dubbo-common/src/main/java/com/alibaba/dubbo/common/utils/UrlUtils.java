@@ -27,6 +27,13 @@ import java.util.Set;
 
 public class UrlUtils {
 
+    /**
+     * 我么可以吧“address”认为是URL,"defaults"认为是 defaultURL。
+     * 若url有不存在的属性时，从defaultURL获得对应的属性，设置到url中
+     * @param address
+     * @param defaults
+     * @return
+     */
     public static URL parseURL(String address, Map<String, String> defaults) {
         if (address == null || address.length() == 0) {
             return null;

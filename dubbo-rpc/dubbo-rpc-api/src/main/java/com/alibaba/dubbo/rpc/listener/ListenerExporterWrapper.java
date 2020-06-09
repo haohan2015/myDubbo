@@ -31,11 +31,18 @@ public class ListenerExporterWrapper<T> implements Exporter<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(ListenerExporterWrapper.class);
 
+    /**
+     * 真实的 Exporter 对象
+     */
     private final Exporter<T> exporter;
 
+    /**
+     * Exporter 监听器数组
+     */
     private final List<ExporterListener> listeners;
 
     public ListenerExporterWrapper(Exporter<T> exporter, List<ExporterListener> listeners) {
+        //当时本地导出的时候，此处的exporter的真实类型是InjvmExporter
         if (exporter == null) {
             throw new IllegalArgumentException("exporter == null");
         }
@@ -43,6 +50,7 @@ public class ListenerExporterWrapper<T> implements Exporter<T> {
         this.listeners = listeners;
         if (listeners != null && !listeners.isEmpty()) {
             RuntimeException exception = null;
+            // 执行监听器
             for (ExporterListener listener : listeners) {
                 if (listener != null) {
                     try {
@@ -71,6 +79,7 @@ public class ListenerExporterWrapper<T> implements Exporter<T> {
         } finally {
             if (listeners != null && !listeners.isEmpty()) {
                 RuntimeException exception = null;
+                // 执行监听器
                 for (ExporterListener listener : listeners) {
                     if (listener != null) {
                         try {

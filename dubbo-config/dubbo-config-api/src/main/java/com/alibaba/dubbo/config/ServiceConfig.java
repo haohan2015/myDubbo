@@ -71,8 +71,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     private static final long serialVersionUID = 3033787999037024738L;
 
+    /**
+     * 自适应 Protocol 实现对象
+     */
     private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
+    /**
+     * 自适应 ProxyFactory 实现对象
+     */
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
@@ -701,14 +707,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private void exportLocal(URL url) {
         // 如果 URL 的协议头等于 injvm，说明已经导出到本地了，无需再次导出
         if (!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
+            //因为utl在后面远程暴露服务会使用，所以要创建新的本地url
             URL local = URL.valueOf(url.toFullString())
                     .setProtocol(Constants.LOCAL_PROTOCOL)// 设置协议头为 injvm
                     .setHost(LOCALHOST)
                     .setPort(0);
             //把当前引用的类型放到当前线程的ThreadLocal
+            // 添加服务的真实类名，例如 DemoServiceImpl ，仅用于 RestProtocol 中。
             ServiceClassHolder.getInstance().pushServiceClass(getServiceClass(ref));
             /**此处的proxyFactory是自适应，实际是通过Javassist生成代理类，此处的protocol实际类型是Protocol$Adaptive，而适应类里调用的也不是injvmProtocol,
-             * 首先是包装类ProtocolListenerWrapper，该类中继续调用包装类ProtocolFilterWrapper，在该类中基于真实的invoker生成过滤器链条，最后调用
+             * 首先是包装类ProtocolFilterWrapper，在该类中基于真实的invoker生成过滤器链条，该类中继续调用包装类ProtocolListenerWrapper，最后调用
              * injvmInvoker生成Exporter，然后在ProtocolListenerWrapper中创建ListenerExporterWrapper，并且在ListenerExporterWrapper对于服务导出监听器调用
              * 此处导出的exporter实际类型是ListenerExporterWrapper
              */

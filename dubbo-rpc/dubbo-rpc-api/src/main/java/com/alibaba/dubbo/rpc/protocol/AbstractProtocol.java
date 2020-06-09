@@ -38,6 +38,12 @@ public abstract class AbstractProtocol implements Protocol {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    /**
+     * Exporter 集合
+     *
+     * key: 服务键 {@link #serviceKey(URL)} 或 {@link URL#getServiceKey()} 。
+     * 该集合拥有该协议中，所有暴露中的 Exporter 对象，也就是同一个服务的同于个协议只会有一个具体的协议实例，比如InjvmProtocol协议实例
+     */
     protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<String, Exporter<?>>();
 
     //TODO SOFEREFENCE
