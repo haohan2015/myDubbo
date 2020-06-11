@@ -677,25 +677,31 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         // 为服务提供类(ref)生成 Invoker
                         //Dubbo 默认的 ProxyFactory 实现类是 JavassistProxyFactory
                         //通过代理工厂创建代理类，注意此时invoker里放的url是registryURL，此处proxyFactory的是proxyFactory$Adaptive，此处默认实现是JavassistProxyFactory
+                        //把服务提供者的URL放到注册中心URL中是为了后面在registryProtocol中使用
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
                         // DelegateProviderMetaDataInvoker 用于持有 Invoker 和 ServiceConfig，此处的invoer实际是AbstractProxyInvoker的匿名实现类
                         //原始Invoker的代理
-                        /**
-                         * 此处的protocol实际类型是Protocol$Adaptive，而适应类里调用的也不是RegistryProtocol,
-                         * 首先是包装类ProtocolListenerWrapper，该类中继续调用包装类ProtocolFilterWrapper，最后调用
-                         * RegistryProtocol生成Exporter，然后在ProtocolListenerWrapper中创建ListenerExporterWrapper，并且在ListenerExporterWrapper对于服务导出监听器调用
+                        //该对象在 Invoker 对象的基础上，增加了当前服务提供者 ServiceConfig 对象。
+                        DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
+
+                        //通过RegistryProtocol来暴露远程服务
+                        /**此处的proxyFactory是自适应，实际是通过Javassist生成代理类，此处的protocol实际类型是Protocol$Adaptive，而适应类里调用的也不是registryProtocol,
+                         * 首先是包装类ProtocolFilterWrapper，在该类中基于真实的invoker生成过滤器链条（实际上对于当前的registryProtocol来说是忽略的），该类中继续调用包装类ProtocolListenerWrapper，最后调用
+                         * registryProtocol生成Exporter，然后在ProtocolListenerWrapper中创建ListenerExporterWrapper，并且在ListenerExporterWrapper对于服务导出监听器调用（实际上对于当前的registryProtocol来说是忽略的）
                          * 此处导出的exporter实际类型是ListenerExporterWrapper
                          */
-                        DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
-                        //通过RegistryProtocol来暴露远程服务
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
                         exporters.add(exporter);
                     }
                 } else {
+                    // 用于被服务消费者直连服务提供者，参见文档 http://dubbo.apache.org/zh-cn/docs/user/demos/explicit-target.html 。主要用于开发测试环境使用。
+                    // 使用 ProxyFactory 创建 Invoker 对象
                     Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
+                    // 创建 DelegateProviderMetaDataInvoker 对象
                     DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
-
+                    // 使用 Protocol 暴露 Invoker 对象
                     Exporter<?> exporter = protocol.export(wrapperInvoker);
+                    // 添加到 `exporters`
                     exporters.add(exporter);
                 }
             }

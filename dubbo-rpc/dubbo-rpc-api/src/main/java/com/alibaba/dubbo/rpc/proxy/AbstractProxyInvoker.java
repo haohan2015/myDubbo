@@ -34,6 +34,10 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
 
     private final Class<T> type;
 
+    /**
+     * 对于需要注册中心服务提供者来说，此处的url是RegistryURL，
+     * 如果是不需要注册中心只需要暴露服务，那么此处的url就是服务提供者的Url
+     */
     private final URL url;
 
     public AbstractProxyInvoker(T proxy, Class<T> type, URL url) {

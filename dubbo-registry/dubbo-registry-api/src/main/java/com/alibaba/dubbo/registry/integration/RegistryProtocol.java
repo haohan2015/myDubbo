@@ -311,7 +311,8 @@ public class RegistryProtocol implements Protocol {
         //export类似dubbo://172.16.10.53:20880/com.alibaba.dubbo.demo.DemoService?anyhost=true&application=demo-provider
         // &bind.ip=172.16.10.53&bind.port=20880&dubbo=2.0.2&generic=false&interface=com.alibaba.dubbo.demo.DemoService
         // &methods=sayHello&pid=8460&qos.port=22222&side=provider&timestamp=1560860547308
-        //此处的origininvoker类型为DelegateProviderMetaDataInvoker
+        //此处的origininvoker类型为DelegateProviderMetaDataInvoker，此处通过origininvoker.getUrl()获取的是registryURL，
+        // 是前面在JavassistProxyFactory设置的
         String export = origininvoker.getUrl().getParameterAndDecoded(Constants.EXPORT_KEY);
         if (export == null || export.length() == 0) {
             throw new IllegalArgumentException("The registry export url is null! registry: " + origininvoker.getUrl());
