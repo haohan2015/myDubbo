@@ -59,13 +59,29 @@ import static com.alibaba.dubbo.common.Constants.VALIDATION_KEY;
 public class RegistryProtocol implements Protocol {
 
     private final static Logger logger = LoggerFactory.getLogger(RegistryProtocol.class);
+
+    /**
+     * 单例。在 Dubbo SPI 中，被初始化，有且仅有一次。
+     */
     private static RegistryProtocol INSTANCE;
+
     private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<URL, NotifyListener>();
+
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
     //providerurl <--> exporter
+    // 用于解决rmi重复暴露端口冲突的问题，已经暴露过的服务不再重新暴露
+
     private final Map<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<String, ExporterChangeableWrapper<?>>();
     private Cluster cluster;
+
+    /**
+     * Protocol 自适应拓展实现类，通过 Dubbo SPI 自动注入。
+     */
     private Protocol protocol;
+
+    /**
+     * RegistryFactory 自适应拓展实现类，通过 Dubbo SPI 自动注入。
+     */
     private RegistryFactory registryFactory;
     private ProxyFactory proxyFactory;
 
@@ -80,6 +96,11 @@ public class RegistryProtocol implements Protocol {
         return INSTANCE;
     }
 
+    /**
+     * 过滤掉那些不需要注册到注册中心的参数
+     * @param url
+     * @return
+     */
     //Filter the parameters that do not need to be output in url(Starting with .)
     private static String[] getFilteredKeys(URL url) {
         Map<String, String> params = url.getParameters();
@@ -132,12 +153,13 @@ public class RegistryProtocol implements Protocol {
         //export invoker，此处的originInvoker的实际类型是DelegateProviderMetaDataInvoker
         //暴露服务
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker);
+
         // 获取注册中心 URL，以 zookeeper 注册中心为例，得到的示例 URL 如下：
         // zookeeper://127.0.0.1:2181/com.alibaba.dubbo.registry.RegistryService?application=demo-provider&dubbo=2.0.2&export=dubbo%3A%2F%2F172.17.48.52%3A20880%2Fcom.alibaba.dubbo.demo.DemoService%3Fanyhost%3Dtrue%26application%3Ddemo-provider
         URL registryUrl = getRegistryUrl(originInvoker);
 
         //registry provider
-        //获取初测中心，如果此处指定使用的是zookeeper，那么此处的registry类型是ZookeeperRegistry
+        //获取注册中心，如果此处指定使用的是zookeeper，那么此处的registry类型是ZookeeperRegistry
         // 根据 URL 加载 Registry 实现类，比如 ZookeeperRegistry
         final Registry registry = getRegistry(originInvoker);
 
@@ -146,17 +168,17 @@ public class RegistryProtocol implements Protocol {
         final URL registeredProviderUrl = getRegisteredProviderUrl(originInvoker);
 
         //to judge to delay publish whether or not
-        // 获取 register 参数
+        // 获取 register 参数，用户判断是否延迟注册服务
         boolean register = registeredProviderUrl.getParameter("register", true);
 
-        // 向服务提供者与消费者注册表中注册服务提供者
+        // 向本地注册表，注册服务提供者
         ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
 
         // 根据 register 的值决定是否注册服务
         if (register) {
             // 向注册中心注册服务
             register(registryUrl, registeredProviderUrl);
-            //设置注册标识
+            // 标记向本地注册表的注册服务提供者，标识已经注册
             ProviderConsumerRegTable.getProviderWrapper(originInvoker).setReg(true);
         }
 
@@ -177,6 +199,12 @@ public class RegistryProtocol implements Protocol {
         return new DestroyableExporter<T>(exporter, originInvoker, overrideSubscribeUrl, registeredProviderUrl);
     }
 
+    /**
+     * 此处的 Local 指的是，本地启动服务，但是不包括向注册中心注册服务的意思。
+     * @param originInvoker
+     * @param <T>
+     * @return
+     */
     @SuppressWarnings("unchecked")
     private <T> ExporterChangeableWrapper<T> doLocalExport(final Invoker<T> originInvoker) {
         //获取已经导出服务的缓存Key
@@ -186,10 +214,12 @@ public class RegistryProtocol implements Protocol {
         // &methods=sayHello&pid=14264&qos.port=22222&side=provider&timestamp=1560860800207
         String key = getCacheKey(originInvoker);
         // 访问缓存
+        // 从 `bounds` 获得，是不是已经暴露过服务
         ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
         if (exporter == null) {
             synchronized (bounds) {
                 exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
+                // 未暴露过，进行暴露服务
                 if (exporter == null) {
                     //根据原始Invoker和提供者URL创建InvokerDelegete，其中InvokerDelegete是内部类
                     // 创建 Invoker 为委托类对象
@@ -283,9 +313,11 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     private URL getRegisteredProviderUrl(final Invoker<?> originInvoker) {
+        // 从注册中心的 export 参数中，获得服务提供者的 URL
         URL providerUrl = getProviderUrl(originInvoker);
         //The address you see at the registry
-        return providerUrl.removeParameters(getFilteredKeys(providerUrl))
+        //移除多余的参数。因为，这些参数注册到注册中心没有实际的用途。
+        return providerUrl.removeParameters(getFilteredKeys(providerUrl))// 移除 .hide 为前缀的参数
                 .removeParameter(Constants.MONITOR_KEY)
                 .removeParameter(Constants.BIND_IP_KEY)
                 .removeParameter(Constants.BIND_PORT_KEY)

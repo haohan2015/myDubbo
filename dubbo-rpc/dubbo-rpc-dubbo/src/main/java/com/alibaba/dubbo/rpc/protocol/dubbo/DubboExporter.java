@@ -32,6 +32,7 @@ public class DubboExporter<T> extends AbstractExporter<T> {
     private final Map<String, Exporter<?>> exporterMap;
 
     public DubboExporter(Invoker<T> invoker, String key, Map<String, Exporter<?>> exporterMap) {
+        //此处的invoker的实际类型是InvokerDelegete，他是RegistryProtocol的内部类
         super(invoker);
         this.key = key;
         this.exporterMap = exporterMap;

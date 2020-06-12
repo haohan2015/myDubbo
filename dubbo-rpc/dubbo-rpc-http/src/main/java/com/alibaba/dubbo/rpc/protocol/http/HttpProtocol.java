@@ -72,12 +72,14 @@ public class HttpProtocol extends AbstractProxyProtocol {
 
     @Override
     protected <T> Runnable doExport(final T impl, Class<T> type, URL url) throws RpcException {
+        //0.0.0.0:20880
         String addr = getAddr(url);
         HttpServer server = serverMap.get(addr);
         if (server == null) {
             server = httpBinder.bind(url, new InternalHandler());
             serverMap.put(addr, server);
         }
+        //类似 /com.alibaba.dubbo.demo.DemoService
         final String path = url.getAbsolutePath();
         skeletonMap.put(path, createExporter(impl, type));
 
