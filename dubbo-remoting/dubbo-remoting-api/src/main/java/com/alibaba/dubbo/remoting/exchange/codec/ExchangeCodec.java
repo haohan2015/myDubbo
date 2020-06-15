@@ -92,6 +92,7 @@ public class ExchangeCodec extends TelnetCodec {
     @Override
     protected Object decode(Channel channel, ChannelBuffer buffer, int readable, byte[] header) throws IOException {
         // check magic number.
+        //通过 magic number 判断到，并非 Dubbo Exchange 信息交易的协议头，转交给父类 TelnetCodec 处理，一般此时是 Telnet 消息。
         if (readable > 0 && header[0] != MAGIC_HIGH
                 || readable > 1 && header[1] != MAGIC_LOW) {
             int length = header.length;
@@ -126,6 +127,7 @@ public class ExchangeCodec extends TelnetCodec {
         ChannelBufferInputStream is = new ChannelBufferInputStream(buffer, len);
 
         try {
+            //通过 magic number 判断到，符合 Dubbo Exchange 信息交易的协议头，ExchangeCodec 自己处理。
             //调用子类DubboCodec
             return decodeBody(channel, is, header);
         } finally {

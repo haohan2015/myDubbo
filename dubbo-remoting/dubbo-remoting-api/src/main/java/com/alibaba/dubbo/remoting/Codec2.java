@@ -22,7 +22,14 @@ import com.alibaba.dubbo.common.extension.SPI;
 import com.alibaba.dubbo.remoting.buffer.ChannelBuffer;
 
 import java.io.IOException;
-
+/**
+ * 编码
+ * @author admin
+ * @date 2020/6/15 17:29
+ * @description TODO
+ * @param
+ * @return
+ */
 @SPI
 public interface Codec2 {
 

@@ -26,7 +26,7 @@ import com.alibaba.dubbo.common.extension.SPI;
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Transport_Layer">Transport Layer</a>
  * <a href="http://en.wikipedia.org/wiki/Client%E2%80%93server_model">Client/Server</a>
- *
+ * 网络传输接口
  * @see com.alibaba.dubbo.remoting.Transporters
  */
 @SPI("netty")
@@ -34,7 +34,7 @@ public interface Transporter {
 
     /**
      * Bind a server.
-     *
+     * 绑定一个服务器
      * @param url     server url
      * @param handler
      * @return server
@@ -46,7 +46,7 @@ public interface Transporter {
 
     /**
      * Connect to a server.
-     *
+     * 连接一个服务器，即创建一个客户端
      * @param url     server url
      * @param handler
      * @return client

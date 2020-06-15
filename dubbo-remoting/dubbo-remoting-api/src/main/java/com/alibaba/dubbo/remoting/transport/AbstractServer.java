@@ -41,11 +41,32 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
 
     protected static final String SERVER_THREAD_POOL_NAME = "DubboServerHandler";
     private static final Logger logger = LoggerFactory.getLogger(AbstractServer.class);
+
+    /**
+     * 线程池
+     */
     ExecutorService executor;
+
+    /**
+     * 服务地址
+     */
     private InetSocketAddress localAddress;
+
+    /**
+     * 绑定地址
+     */
     private InetSocketAddress bindAddress;
+
+    /**
+     * 服务器最大可接受连接数
+     */
     private int accepts;
-    private int idleTimeout = 600; //600 seconds
+
+    /**
+     * 空闲超时时间，单位：毫秒
+     */
+    //600 seconds
+    private int idleTimeout = 600;
 
     public AbstractServer(URL url, ChannelHandler handler) throws RemotingException {
         //handler类型是MultiMessageHandler
@@ -77,6 +98,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
             throw new RemotingException(url.toInetSocketAddress(), null, "Failed to bind " + getClass().getSimpleName()
                     + " on " + getLocalAddress() + ", cause: " + t.getMessage(), t);
         }
+        // 获得线程池
         //fixme replace this with better method
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
         executor = (ExecutorService) dataStore.get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY, Integer.toString(url.getPort()));
@@ -140,7 +162,9 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
 
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
+        // 获得所有的客户端的通道
         Collection<Channel> channels = getChannels();
+        // 群发消息
         for (Channel channel : channels) {
             if (channel.isConnected()) {
                 channel.send(message, sent);
@@ -189,6 +213,11 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         return idleTimeout;
     }
 
+    /**
+     * 被客户端连接
+     * @param ch
+     * @throws RemotingException
+     */
     @Override
     public void connected(Channel ch) throws RemotingException {
         // If the server has entered the shutdown process, reject any new connection
@@ -206,6 +235,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
             ch.close();
             return;
         }
+        // 连接
         super.connected(ch);
     }
 

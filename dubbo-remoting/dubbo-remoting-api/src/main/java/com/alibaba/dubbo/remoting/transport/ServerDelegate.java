@@ -27,7 +27,7 @@ import java.util.Collection;
 
 /**
  * ServerDelegate
- *
+ * 在每个实现的方法里，直接调用被装饰的 server 属性的方法。
  *
  */
 public class ServerDelegate implements Server {

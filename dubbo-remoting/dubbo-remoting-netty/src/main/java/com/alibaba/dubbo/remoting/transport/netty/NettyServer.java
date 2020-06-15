@@ -66,7 +66,9 @@ public class NettyServer extends AbstractServer implements Server {
         //设置netty的日志工厂
         NettyHelper.setNettyLoggerFactory();
         // 创建 boss 和 worker 线程池
+        // 无界的Netty boss线程池，负责和消费者建立新的连接
         ExecutorService boss = Executors.newCachedThreadPool(new NamedThreadFactory("NettyServerBoss", true));
+        // 无界的Netty worker线程池，负责连接的数据交换
         ExecutorService worker = Executors.newCachedThreadPool(new NamedThreadFactory("NettyServerWorker", true));
         ChannelFactory channelFactory = new NioServerSocketChannelFactory(boss, worker, getUrl().getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS));
 

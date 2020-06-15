@@ -23,6 +23,7 @@ import com.alibaba.dubbo.remoting.RemotingException;
 
 /**
  * AbstractChannel
+ * 具体的发送方法，子类实现。在 AbstractChannel 中，目前只做状态检查。
  */
 public abstract class AbstractChannel extends AbstractPeer implements Channel {
 
