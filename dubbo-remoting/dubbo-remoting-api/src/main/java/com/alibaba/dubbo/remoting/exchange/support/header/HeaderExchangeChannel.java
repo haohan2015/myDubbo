@@ -35,6 +35,7 @@ import java.net.InetSocketAddress;
 
 /**
  * ExchangeReceiver
+ * 基于消息头部( Header )的信息交换通道实现类
  */
 final class HeaderExchangeChannel implements ExchangeChannel {
 
@@ -42,15 +43,22 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     //com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchangeChannel.CHANNEL
     private static final String CHANNEL_KEY = HeaderExchangeChannel.class.getName() + ".CHANNEL";
 
+    /**
+     * 通道
+     */
     private final Channel channel;
 
+    /**
+     * 是否关闭
+     */
     private volatile boolean closed = false;
 
     HeaderExchangeChannel(Channel channel) {
         if (channel == null) {
             throw new IllegalArgumentException("channel == null");
         }
-        // 这里的 channel 指向的是 NettyClient
+        // 对于服务提供者，这里的 channel 指向的是 NettyChannel
+        // 对于服务消费者，这里的 channel 指向的是 NettyClient
         this.channel = channel;
     }
 
@@ -58,6 +66,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         if (ch == null) {
             return null;
         }
+        //通过 ch.attribute 的 CHANNEL_KEY 键值，保证有且仅有为 ch 属性，创建唯一的 HeaderExchangeChannel 对象。
         HeaderExchangeChannel ret = (HeaderExchangeChannel) ch.getAttribute(CHANNEL_KEY);
         if (ret == null) {
             ret = new HeaderExchangeChannel(ch);

@@ -99,7 +99,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         Object msg = req.getData();
         try {
             // handle data.
-            //对于服务提供者 次数的handler的真实类型是 DubboProtocol的匿名内部类ExchangeHandlerAdapter的属性requestHandler channel的真实类型是HeaderExchangeChannel
+            //对于服务提供者 此处的handler的真实类型是 DubboProtocol的匿名内部类ExchangeHandlerAdapter的属性requestHandler channel的真实类型是HeaderExchangeChannel
             // 继续向下调用
             Object result = handler.reply(channel, msg);
             // 设置 OK 状态码
@@ -211,6 +211,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                     Exception e = new Exception("Dubbo client can not supported string message: " + message + " in channel: " + channel + ", url: " + channel.getUrl());
                     logger.error(e.getMessage(), e);
                 } else {
+                    //对于服务提供者来说，此处的handler的真实类型是TelnetHandlerAdapter
                     String echo = handler.telnet(channel, (String) message);
                     if (echo != null && echo.length() > 0) {
                         channel.send(echo);

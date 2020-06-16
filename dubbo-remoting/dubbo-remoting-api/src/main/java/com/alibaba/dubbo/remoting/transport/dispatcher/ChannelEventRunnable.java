@@ -58,7 +58,8 @@ public class ChannelEventRunnable implements Runnable {
         if (state == ChannelState.RECEIVED) {
             try {
                 // 将 channel 和 message 传给 ChannelHandler 对象，进行后续的调用
-                //此处handler的真实类型是DecodeHandler
+                //对于服务提供者，此处handler的真实类型是DecodeHandler，message的真实类型是Request
+                //对于服务消费者，此处handler的真实类型是DecodeHandler，message的真实类型是Response
                 handler.received(channel, message);
             } catch (Exception e) {
                 logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel

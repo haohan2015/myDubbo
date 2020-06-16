@@ -39,18 +39,42 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * DefaultMessageClient
+ * 基于消息头部( Header )的信息交换客户端实现类
  */
 public class HeaderExchangeClient implements ExchangeClient {
 
     private static final Logger logger = LoggerFactory.getLogger(HeaderExchangeClient.class);
 
+    /**
+     * 定时器线程池
+     */
     private static final ScheduledThreadPoolExecutor scheduled = new ScheduledThreadPoolExecutor(2, new NamedThreadFactory("dubbo-remoting-client-heartbeat", true));
+
+    /**
+     * 客户端，此处的client的类型是NettyClient
+     */
     private final Client client;
+
+    /**
+     * 信息交换通道
+     */
     private final ExchangeChannel channel;
+
+    /**
+     * 心跳定时器
+     */
     // heartbeat timer
     private ScheduledFuture<?> heartbeatTimer;
+
+    /**
+     * 是否心跳
+     */
     // heartbeat(ms), default value is 0 , won't execute a heartbeat.
     private int heartbeat;
+
+    /**
+     * 心跳间隔，单位：毫秒
+     */
     private int heartbeatTimeout;
 
     public HeaderExchangeClient(Client client, boolean needHeartbeat) {
@@ -62,13 +86,16 @@ public class HeaderExchangeClient implements ExchangeClient {
         // 创建 HeaderExchangeChannel 对象
         this.channel = new HeaderExchangeChannel(client);
 
-        // 以下代码均与心跳检测逻辑有关
+        // 以下代码均与心跳检测逻辑有关，心跳间隔，对于长连接，当物理层断开时，
+        // 比如拔网线，TCP的FIN消息来不及发送，对方收不到断开事件，此时需要心跳来帮助检查连接是否已断开
         String dubbo = client.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
         this.heartbeat = client.getUrl().getParameter(Constants.HEARTBEAT_KEY, dubbo != null && dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
         this.heartbeatTimeout = client.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
+        // 避免间隔太短
         if (heartbeatTimeout < heartbeat * 2) {
             throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
         }
+        // 发起心跳定时器
         if (needHeartbeat) {
             // 开启心跳检测定时器
             startHeartbeatTimer();
@@ -190,7 +217,9 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     private void startHeartbeatTimer() {
+        // 停止原有定时任务
         stopHeartbeatTimer();
+        // 发起新的定时任务
         if (heartbeat > 0) {
             heartbeatTimer = scheduled.scheduleWithFixedDelay(
                     new HeartBeatTask(new HeartBeatTask.ChannelProvider() {

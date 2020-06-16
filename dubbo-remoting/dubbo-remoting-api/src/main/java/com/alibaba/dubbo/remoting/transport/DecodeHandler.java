@@ -57,6 +57,7 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
         // 执行后续逻辑
         //对于服务提供者和消费者 此处的handler的真实类型是HeaderExchangeHandler
         //对于消费者，此处的message的真实类型是Response
+        //对于提供者，此处的message的真实类型是Request
         handler.received(channel, message);
     }
     //message类型是DecodeableRpcInvocation

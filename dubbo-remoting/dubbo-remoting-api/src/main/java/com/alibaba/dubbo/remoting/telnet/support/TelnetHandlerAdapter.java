@@ -23,15 +23,20 @@ import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.telnet.TelnetHandler;
 import com.alibaba.dubbo.remoting.transport.ChannelHandlerAdapter;
 
+/**
+ * telnet 处理器适配器
+ */
 public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements TelnetHandler {
 
     private final ExtensionLoader<TelnetHandler> extensionLoader = ExtensionLoader.getExtensionLoader(TelnetHandler.class);
 
     @Override
     public String telnet(Channel channel, String message) throws RemotingException {
+        // 处理 telnet 提示键
         String prompt = channel.getUrl().getParameterAndDecoded(Constants.PROMPT_KEY, Constants.DEFAULT_PROMPT);
         boolean noprompt = message.contains("--no-prompt");
         message = message.replace("--no-prompt", "");
+        // 拆出 telnet 命令和参数
         StringBuilder buf = new StringBuilder();
         message = message.trim();
         String command;
@@ -48,6 +53,7 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
             command = "";
         }
         if (command.length() > 0) {
+            // 查找到对应的 TelnetHandler 对象，执行命令
             if (extensionLoader.hasExtension(command)) {
                 try {
                     String result = extensionLoader.getExtension(command).telnet(channel, message);
@@ -59,10 +65,13 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
                     buf.append(t.getMessage());
                 }
             } else {
+                // 查找不到对应的 TelnetHandler 对象，返回报错。
                 buf.append("Unsupported command: ");
                 buf.append(command);
             }
         }
+
+        // 添加 telnet 提示语
         if (buf.length() > 0) {
             buf.append("\r\n");
         }
