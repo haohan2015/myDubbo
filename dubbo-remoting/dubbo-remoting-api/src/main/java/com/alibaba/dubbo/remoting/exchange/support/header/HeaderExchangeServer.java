@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * ExchangeServerImpl
- * 基于消息头部( Header )的信息交换服务器实现类
+ * 基于消息头部( Header )的信息交换服务器实现类，
  */
 public class HeaderExchangeServer implements ExchangeServer {
 
@@ -84,6 +84,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     private AtomicBoolean closed = new AtomicBoolean(false);
 
     public HeaderExchangeServer(Server server) {
+        //此处server的真实类型是NettyServer
         if (server == null) {
             throw new IllegalArgumentException("server == null");
         }

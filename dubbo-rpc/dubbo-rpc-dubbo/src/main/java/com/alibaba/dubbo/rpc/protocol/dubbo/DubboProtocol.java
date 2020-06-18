@@ -244,7 +244,7 @@ public class DubboProtocol extends AbstractProtocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        //此处的invoker的实际类型是InvokerDelegete，他是RegistryProtocol的内部类
+        //此处的invoker的实际类型是基于过滤器生成的Invoker链条
         //获取provider的url，该出的url是protocol=dubbo的服务导出url
         URL url = invoker.getUrl();
 

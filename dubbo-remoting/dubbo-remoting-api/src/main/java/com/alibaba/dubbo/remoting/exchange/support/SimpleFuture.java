@@ -22,6 +22,7 @@ import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 
 /**
  * SimpleFuture
+ * 简单的 Future 实现，目前暂不使用
  */
 public class SimpleFuture implements ResponseFuture {
 

@@ -63,6 +63,7 @@ public class ChannelHandlers {
      * connection 在 IO 线程上，将连接断开事件放入队列，有序逐个执行，其它消息派发到线程池。
      */
     protected ChannelHandler wrapInternal(ChannelHandler handler, URL url) {
+        //对于服务提供者来说，此处的handler的真实类型是DecodeHandler
         return new MultiMessageHandler(new HeartbeatHandler(ExtensionLoader.getExtensionLoader(Dispatcher.class)
                 .getAdaptiveExtension().dispatch(handler, url)));
     }

@@ -686,9 +686,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
                         //通过RegistryProtocol来暴露远程服务
                         /**此处的proxyFactory是自适应，实际是通过Javassist生成代理类，此处的protocol实际类型是Protocol$Adaptive，而适应类里调用的也不是registryProtocol,
-                         * 首先是包装类ProtocolFilterWrapper，在该类中基于真实的invoker生成过滤器链条（实际上对于当前的registryProtocol来说是忽略的），该类中继续调用包装类ProtocolListenerWrapper，最后调用
-                         * registryProtocol生成Exporter，然后在ProtocolListenerWrapper中创建ListenerExporterWrapper，并且在ListenerExporterWrapper对于服务导出监听器调用（实际上对于当前的registryProtocol来说是忽略的）
-                         * 此处导出的exporter实际类型是ListenerExporterWrapper
+                         * 首先是类ProtocolListenerWrapper，该类中继续调用包装类ProtocolFilterWrapper，在该类中基于真实的invoker生成过滤器链条（实际上对于当前的registryProtocol来说是忽略的），最后调用
+                         * registryProtocol生成Exporter，此处的Exporter的真实类型是ListenerExporterWrapper
+                         *
                          */
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
                         exporters.add(exporter);

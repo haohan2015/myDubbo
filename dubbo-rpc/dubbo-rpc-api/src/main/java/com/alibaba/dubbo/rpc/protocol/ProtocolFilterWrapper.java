@@ -96,11 +96,13 @@ public class ProtocolFilterWrapper implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        //注册中心，在 RegistryProtocol 中，会调用 DubboProtocol#export(...) 方法时，会走return的流程
+        //当第一次调用，也就是protocol是registryProtocol时，此处的Invoker的真实类型是DelegateProviderMetaDataInvoker
+        //当第二次调用，protocol是DubboProtocol时，此处的incoker的真实类型是InvokerDelegete
         if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
+            //此处protocol的真实类型是RegistryProtocol
             return protocol.export(invoker);
         }
-        //建立带有Filter过滤链的Invoker，再暴露服务
+        //建立带有Filter过滤链的Invoker，再暴露服务，然后调用DubboProtocol#export(...) 方法
         return protocol.export(buildInvokerChain(invoker, Constants.SERVICE_FILTER_KEY, Constants.PROVIDER));
     }
 

@@ -226,8 +226,8 @@ public class RegistryProtocol implements Protocol {
                     final Invoker<?> invokerDelegete = new InvokerDelegete<T>(originInvoker, getProviderUrl(originInvoker));
                     /**
                      * 此处的protocol是自适应类Protocol$Adaptive，在自适应中也不是直接调用DubboProtocol，而是首先调用ProtocolListenerWrapper，
-                     * 在该类中调用了ProtocolFilterWrapper，创建完顾虑器链条，然后才是真实调用DubboProtocol导出服务，最后返回DubboExporter，然后返回ProtocolListenerWrapper
-                     * 通知服务导出监听者，并且最后包装返回ListenerExporterWrapper
+                     * 在该类中调用了ProtocolListenerWrapper，然后调用ProtocolFilterWrapper，创建完顾虑器链条，然后才是真实调用DubboProtocol导出服务，最后返回DubboExporter，然后返回ProtocolListenerWrapper
+                     * 通知服务导出监听者，并且最后包装返回ListenerExporterWrapper返回
                      */
                     exporter = new ExporterChangeableWrapper<T>((Exporter<T>) protocol.export(invokerDelegete), originInvoker);
                     bounds.put(key, exporter);

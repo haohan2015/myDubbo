@@ -51,10 +51,13 @@ public class ProtocolListenerWrapper implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        //此处的Invoker的真实类型是AbstractProxyInvoker的匿名实现类对象
+        //当第一次调用，也就是protocol是registryProtocol时，此处的Invoker的真实类型是DelegateProviderMetaDataInvoker
+        //当第二次调用，protocol是DubboProtocol时，此处的incoker的真实类型是InvokerDelegete
         if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
+            //对于服务提供者来说，此处的protocol的真实类型是ProtocolFilterWrapper
             return protocol.export(invoker);
         }
+        //对于服务提供者来说，如果是使用的dubbo协议的话，就会调用ProtocolFilterWrapper
         return new ListenerExporterWrapper<T>(protocol.export(invoker),
                 Collections.unmodifiableList(ExtensionLoader.getExtensionLoader(ExporterListener.class)
                         .getActivateExtension(invoker.getUrl(), Constants.EXPORTER_LISTENER_KEY)));
