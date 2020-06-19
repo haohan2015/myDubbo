@@ -120,6 +120,7 @@ public class DubboProtocol extends AbstractProtocol {
 
         @Override
         public void received(Channel channel, Object message) throws RemotingException {
+            //对于服务提供者来说 此处的channel的真实类型是HeaderExchangeChannel
             if (message instanceof Invocation) {
                 reply((ExchangeChannel) channel, message);
             } else {

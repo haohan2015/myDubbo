@@ -487,11 +487,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             // 单个注册中心或服务直连提供者(服务直连，下同)
             if (urls.size() == 1) {
                 /**
-                 * 此处的refprotocol类型为Protocol$Adaptive，会根据url中的Protocol来加载具体的实现，但是实际也并不是直接调用的真实实现类，而是首先调用的是ProtocolListenerWrapper
-                 * 如果当前的url的protocol是registry，那么直接调用ProtocolFilterWrapper，对于直连的场景，也是会调用ProtocolFilterWrapper，但是拿到返回结果后，会通知改服务导出的监听者，
-                 * 然后返回ListenerInvokerWrapper，但是对于有注册中心的场景会直接调用ProtocolFilterWrapper，对于ProtocolFilterWrapper来说，如果是直连，会直接调用dubboProtocol，拿到返回值DubboInvoker
-                 * 会封装过滤器链条返回，对于有注册中心，会直接调用registryProtocol，之所以对于有注册中心的场景没有通知服务导出监听者和生成过滤器链条，是因为接下来在registry里真实导出服务的时候会有这些流程
-                 * 此处的invoker的实际类型是MockClusterInvoker
+                 * 此处的refprotocol类型为Protocol$Adaptive，会根据url中的Protocol来加载具体的实现，但是实际也并不是直接调用的真实实现类，而是首先调用的是ProtocolFilterWrapper
+                 * 对于有注册中心的服务，第一步什么也不做，会紧接着调用ProtocolListenerWrapper，同样对于有注册中心的服务，这一步什么也不做，然后调用RegistryProtocol
                  */
                 invoker = refprotocol.refer(interfaceClass, urls.get(0));
             } else {

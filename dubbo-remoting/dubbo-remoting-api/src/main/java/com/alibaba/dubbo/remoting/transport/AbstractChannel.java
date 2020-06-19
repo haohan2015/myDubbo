@@ -28,6 +28,7 @@ import com.alibaba.dubbo.remoting.RemotingException;
 public abstract class AbstractChannel extends AbstractPeer implements Channel {
 
     public AbstractChannel(URL url, ChannelHandler handler) {
+        //对于服务提供者来说，此处的url是提供者url，此处的handler的真实类型是NettyServer
         super(url, handler);
     }
 

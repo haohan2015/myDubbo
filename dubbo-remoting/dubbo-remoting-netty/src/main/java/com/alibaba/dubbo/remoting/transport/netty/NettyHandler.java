@@ -38,6 +38,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Sharable
 public class NettyHandler extends SimpleChannelHandler {
 
+    /**
+     * 对于服务提供来说，是远程Ip+端口号到NettyChannel的关系
+     */
     private final Map<String, Channel> channels = new ConcurrentHashMap<String, Channel>(); // <ip:port, channel>
 
     private final URL url;

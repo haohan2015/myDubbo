@@ -116,11 +116,12 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     //channel类型是NettyChannel
     @Override
     public void connected(Channel channel) throws RemotingException {
+        //对于服务提供者，此处的channel的真实类型是nettyChannel
         channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
         channel.setAttribute(KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         try {
-            //对于服务提供者来说 此处handler的真实类型是DubboProtocol
+            //对于服务提供者来说 此处handler的真实类型是DubboProtocol的属性requestHandler
             handler.connected(exchangeChannel);
         } finally {
             HeaderExchangeChannel.removeChannelIfDisconnected(channel);

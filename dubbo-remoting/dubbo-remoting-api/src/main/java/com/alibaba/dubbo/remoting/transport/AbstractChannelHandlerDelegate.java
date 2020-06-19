@@ -29,6 +29,7 @@ public abstract class AbstractChannelHandlerDelegate implements ChannelHandlerDe
     protected ChannelHandler handler;
 
     protected AbstractChannelHandlerDelegate(ChannelHandler handler) {
+        //对于服务提供者，此处handler的真实类型是HeartbeatHandler
         Assert.notNull(handler, "handler == null");
         this.handler = handler;
     }
@@ -43,8 +44,10 @@ public abstract class AbstractChannelHandlerDelegate implements ChannelHandlerDe
 
     @Override
     public void connected(Channel channel) throws RemotingException {
-        //HeaderExchangeHandler
-        //如果是服务提供者，那么此处handler的真实类型是HeaderExchangeHandler，channel的真实类型是NettyChannel
+        //如果是服务提供者,并且是在IO线程，也就是实际上是调用的MultiMessageHandler的，但是因为没有实现该方法，所以调用的父类，也就是该类的方法，
+        // 那么此处handler的真实类型是HeartbeatHandler，channel的真实类型是NettyChannel
+        //如果是服务提供者，并且是在派发线程，也就是实际上是调用的DecodeHandler的，但是因为没有实现该方法，所以调用的父类，也就是该类的方法，
+        // 那么此处handler的真实类型是HeaderExchangeHandler，channel的真实类型是NettyChannel
         handler.connected(channel);
     }
 

@@ -63,6 +63,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     }
 
     static HeaderExchangeChannel getOrAddChannel(Channel ch) {
+        //对于服务提供者来说，此处的ch的真实类型是NettyChannel
         if (ch == null) {
             return null;
         }

@@ -50,7 +50,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
     private volatile boolean closed;
 
     public AbstractPeer(URL url, ChannelHandler handler) {
-        //此处的handler的真实类型是MultiMessageHandler
+        //对于服务提供者来说，此处的url是提供者url，此处的handler的真实类型是MultiMessageHandler
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
@@ -138,7 +138,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
 
     @Override
     public void connected(Channel ch) throws RemotingException {
-        //此处channel的真实类型是NettyChannel
+        //对于服提供者来说，此处channel的真实类型是NettyChannel
         if (closed) {
             return;
         }

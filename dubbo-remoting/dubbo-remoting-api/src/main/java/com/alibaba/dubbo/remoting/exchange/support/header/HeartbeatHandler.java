@@ -42,6 +42,7 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
 
     @Override
     public void connected(Channel channel) throws RemotingException {
+        //如果是服务提供者，channel的真实类型是NettyChannel
         //设置如时间戳
         setReadTimestamp(channel);
         //设置写时间戳

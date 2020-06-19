@@ -38,6 +38,9 @@ final class NettyChannel extends AbstractChannel {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyChannel.class);
 
+    /**
+     * NioClientSocketChannel到NettyChannel的映射关系
+     */
     private static final ConcurrentMap<org.jboss.netty.channel.Channel, NettyChannel> channelMap = new ConcurrentHashMap<org.jboss.netty.channel.Channel, NettyChannel>();
 
     private final org.jboss.netty.channel.Channel channel;
@@ -46,6 +49,7 @@ final class NettyChannel extends AbstractChannel {
 
     /** 私有构造方法 */
     private NettyChannel(org.jboss.netty.channel.Channel channel, URL url, ChannelHandler handler) {
+        //对于服务提供者来说，此处的url是提供者url，此处的handler的真实类型是NettyServer
         super(url, handler);
         if (channel == null) {
             throw new IllegalArgumentException("netty channel == null;");

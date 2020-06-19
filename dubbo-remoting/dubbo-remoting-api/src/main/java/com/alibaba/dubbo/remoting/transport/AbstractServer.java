@@ -69,7 +69,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
     private int idleTimeout = 600;
 
     public AbstractServer(URL url, ChannelHandler handler) throws RemotingException {
-        //handler类型是MultiMessageHandler
+        //对于服务提供者，此处的handler类型是MultiMessageHandler
         // 调用父类构造方法，这里就不用跟进去了，没什么复杂逻辑
         super(url, handler);
 
@@ -222,6 +222,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
     public void connected(Channel ch) throws RemotingException {
         // If the server has entered the shutdown process, reject any new connection
         //如果在消费者链接提供者的过程中，提供者正在关闭或者已经关闭，那么直接拒绝连接
+        //对于服务提供者，此处的ch的真实类型是NettyChannel
         if (this.isClosing() || this.isClosed()) {
             logger.warn("Close new channel " + ch + ", cause: server is closing or has been closed. For example, receive a new connect request while in shutdown process.");
             ch.close();
