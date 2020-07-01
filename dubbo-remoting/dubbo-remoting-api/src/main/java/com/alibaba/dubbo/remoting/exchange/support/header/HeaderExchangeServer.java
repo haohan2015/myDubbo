@@ -57,7 +57,7 @@ public class HeaderExchangeServer implements ExchangeServer {
                     true));
 
     /**
-     * 服务器
+     * 服务器，真实类型是NettyServer
      */
     private final Server server;
 
@@ -68,7 +68,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     private ScheduledFuture<?> heartbeatTimer;
 
     /**
-     * 是否心跳
+     * 是否心跳，只有大于0才代表要开启心跳检测，服务端和消费端会相互发送心跳
      */
     // heartbeat timeout (ms), default value is 0 , won't execute a heartbeat.
     private int heartbeat;

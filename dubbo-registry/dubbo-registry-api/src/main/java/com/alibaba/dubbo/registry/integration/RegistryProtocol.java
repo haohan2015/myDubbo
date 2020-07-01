@@ -61,7 +61,7 @@ public class RegistryProtocol implements Protocol {
     private final static Logger logger = LoggerFactory.getLogger(RegistryProtocol.class);
 
     /**
-     * 单例。在 Dubbo SPI 中，被初始化，有且仅有一次。
+     * 单例。因为在ExtensionLoader中缓存机制，被初始化，有且仅有一次。
      */
     private static RegistryProtocol INSTANCE;
 
@@ -70,19 +70,23 @@ public class RegistryProtocol implements Protocol {
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
     //providerurl <--> exporter
     // 用于解决rmi重复暴露端口冲突的问题，已经暴露过的服务不再重新暴露
-
+    //不同的服务提供者有不同的ExporterChangeableWrapper实例
     private final Map<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<String, ExporterChangeableWrapper<?>>();
     private Cluster cluster;
 
     /**
-     * Protocol 自适应拓展实现类，通过 Dubbo SPI 自动注入。
+     * Protocol 自适应拓展实现类，通过 Dubbo SPI 自动注入。此处的真实类型其实protocol自适应类
      */
     private Protocol protocol;
 
     /**
-     * RegistryFactory 自适应拓展实现类，通过 Dubbo SPI 自动注入。
+     * RegistryFactory 自适应拓展实现类，通过 Dubbo SPI 自动注入。注册中心工厂
      */
     private RegistryFactory registryFactory;
+
+    /**
+     * 通过Dubbo SPI自动注入，代理工厂自适应类
+     */
     private ProxyFactory proxyFactory;
 
     public RegistryProtocol() {
@@ -151,7 +155,7 @@ public class RegistryProtocol implements Protocol {
     @Override
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
         //export invoker，此处的originInvoker的实际类型是DelegateProviderMetaDataInvoker
-        //暴露服务
+        //暴露服务，此处的Local实时单纯的包括在本地暴露服务，没有通过注册中心向远程暴露服务
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker);
 
         // 获取注册中心 URL，以 zookeeper 注册中心为例，得到的示例 URL 如下：
@@ -171,7 +175,7 @@ public class RegistryProtocol implements Protocol {
         // 获取 register 参数，用户判断是否延迟注册服务
         boolean register = registeredProviderUrl.getParameter("register", true);
 
-        // 向本地注册表，注册服务提供者
+        // 向本地注册表，注册服务提供者，目前发现的作用就是用来通过命令实现摸个服务上下线
         ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
 
         // 根据 register 的值决定是否注册服务
@@ -212,6 +216,9 @@ public class RegistryProtocol implements Protocol {
         //key类似dubbo://172.16.10.53:20880/com.alibaba.dubbo.demo.DemoService?anyhost=true&application=demo-provider
         // &bind.ip=172.16.10.53&bind.port=20880&dubbo=2.0.2&generic=false&interface=com.alibaba.dubbo.demo.DemoService
         // &methods=sayHello&pid=14264&qos.port=22222&side=provider&timestamp=1560860800207
+        //对于相同的接口但是定义了多个不同的dubbo:service标签，这里的Key也是不同的，因为com.alibaba.dubbo.demo.DemoService不相同，对于后来的标签，
+        // 该值会从2开始累加，比如第二个就是com.alibaba.dubbo.demo.DemoService2，第三个就是com.alibaba.dubbo.demo.DemoService3，
+        // 这个操作是在DubboBeanDefinitionParser的第101行完成的
         String key = getCacheKey(originInvoker);
         // 访问缓存
         // 从 `bounds` 获得，是不是已经暴露过服务
@@ -292,7 +299,7 @@ public class RegistryProtocol implements Protocol {
     private Registry getRegistry(final Invoker<?> originInvoker) {
         //获取注册地址
         URL registryUrl = getRegistryUrl(originInvoker);
-        //此处的registryFactory的真实类型RegistryFactory，最终调用的是AbstractRegistryFactory的getRegistry
+        //此处的registryFactory的真实类型RegistryFactory$Adaptive，最终调用的是AbstractRegistryFactory的getRegistry
         return registryFactory.getRegistry(registryUrl);
     }
 
@@ -459,6 +466,7 @@ public class RegistryProtocol implements Protocol {
          * @param url     invoker.getUrl return this value
          */
         public InvokerDelegete(Invoker<T> invoker, URL url) {
+            //对于服务提供者，此处的invoker的真实类型是DelegateProviderMetaDataInvoker,url是真实提供者的Url
             super(invoker, url);
             this.invoker = invoker;
         }
@@ -565,6 +573,7 @@ public class RegistryProtocol implements Protocol {
         private Exporter<T> exporter;
 
         public ExporterChangeableWrapper(Exporter<T> exporter, Invoker<T> originInvoker) {
+            //对于服务提供者，此处的exporter的真实类型是ListenerExporterWrapper，originInvoker真实类型DelegateProviderMetaDataInvoker
             this.exporter = exporter;
             this.originInvoker = originInvoker;
         }

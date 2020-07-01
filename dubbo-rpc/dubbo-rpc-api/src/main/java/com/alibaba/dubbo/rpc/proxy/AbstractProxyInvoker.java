@@ -30,6 +30,9 @@ import java.lang.reflect.InvocationTargetException;
  */
 public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
 
+    /**
+     * 如果是服务提供者，此处的proxy是spring中的bean
+     */
     private final T proxy;
 
     private final Class<T> type;

@@ -38,7 +38,7 @@ public class ChannelHandlers {
     }
 
     public static ChannelHandler wrap(ChannelHandler handler, URL url) {
-        //如果是服务发布，那么此处的handler的类型为DecodeHandler
+        //不论是是服务发布还是服务消费，那么此处的handler的类型为DecodeHandler
         //1.此处调用的是ChannelHandlers的wrapInternal方法
         //2.wrapInternal返回的是MultiMessageHandler类型的ChannelHandler
         //3.MultiMessageHandler中的handler类型是HeartbeatHandler

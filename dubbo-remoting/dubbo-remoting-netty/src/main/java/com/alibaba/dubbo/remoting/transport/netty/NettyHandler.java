@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class NettyHandler extends SimpleChannelHandler {
 
     /**
-     * 对于服务提供来说，是远程Ip+端口号到NettyChannel的关系
+     * 对于服务提供来说，是远程Ip+端口号到NettyChannel的关系，并且和NettyServer中的channels指向同一个实例
      */
     private final Map<String, Channel> channels = new ConcurrentHashMap<String, Channel>(); // <ip:port, channel>
 

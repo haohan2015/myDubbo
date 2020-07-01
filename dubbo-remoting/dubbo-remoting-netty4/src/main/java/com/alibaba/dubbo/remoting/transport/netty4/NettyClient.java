@@ -49,6 +49,9 @@ public class NettyClient extends AbstractClient {
 
     private Bootstrap bootstrap;
 
+    /**
+     * NioSocketChannel
+     */
     private volatile Channel channel; // volatile, please copy reference to use
 
     public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
@@ -91,11 +94,13 @@ public class NettyClient extends AbstractClient {
         long start = System.currentTimeMillis();
         ChannelFuture future = bootstrap.connect(getConnectAddress());
         try {
+            // 等待连接成功或者超时
             boolean ret = future.awaitUninterruptibly(3000, TimeUnit.MILLISECONDS);
-
+            // 连接成功
             if (ret && future.isSuccess()) {
                 Channel newChannel = future.channel();
                 try {
+                    // 关闭老的连接
                     // Close old channel
                     Channel oldChannel = NettyClient.this.channel; // copy reference
                     if (oldChannel != null) {
@@ -109,6 +114,7 @@ public class NettyClient extends AbstractClient {
                         }
                     }
                 } finally {
+                    // 若 NettyClient 被关闭，关闭连接
                     if (NettyClient.this.isClosed()) {
                         try {
                             if (logger.isInfoEnabled()) {
@@ -119,13 +125,16 @@ public class NettyClient extends AbstractClient {
                             NettyClient.this.channel = null;
                             NettyChannel.removeChannelIfDisconnected(newChannel);
                         }
+                        // 设置新连接
                     } else {
                         NettyClient.this.channel = newChannel;
                     }
                 }
+                // 发生异常，抛出 RemotingException 异常
             } else if (future.cause() != null) {
                 throw new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
                         + getRemoteAddress() + ", error message is:" + future.cause().getMessage(), future.cause());
+                // 无结果（连接超时），抛出 RemotingException 异常
             } else {
                 throw new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
                         + getRemoteAddress() + " client-side timeout "

@@ -22,8 +22,19 @@ import java.io.InputStream;
 
 public class ChannelBufferInputStream extends InputStream {
 
+    /**
+     * 缓存
+     */
     private final ChannelBuffer buffer;
+
+    /**
+     * 开始位置
+     */
     private final int startIndex;
+
+    /**
+     * 结束位置
+     */
     private final int endIndex;
 
     public ChannelBufferInputStream(ChannelBuffer buffer) {

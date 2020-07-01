@@ -57,7 +57,7 @@ public class ProtocolListenerWrapper implements Protocol {
             //对于服务提供者来说，此处的protocol的真实类型是ProtocolFilterWrapper
             return protocol.export(invoker);
         }
-        //对于服务提供者来说，如果是使用的dubbo协议的话，就会调用ProtocolFilterWrapper
+        //对于服务提供者来说，如果是使用的dubbo协议的话，就会调用DubboProtocol.export
         return new ListenerExporterWrapper<T>(protocol.export(invoker),
                 Collections.unmodifiableList(ExtensionLoader.getExtensionLoader(ExporterListener.class)
                         .getActivateExtension(invoker.getUrl(), Constants.EXPORTER_LISTENER_KEY)));

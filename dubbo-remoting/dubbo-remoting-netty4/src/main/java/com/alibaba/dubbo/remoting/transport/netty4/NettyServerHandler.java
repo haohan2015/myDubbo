@@ -35,8 +35,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @io.netty.channel.ChannelHandler.Sharable
 public class NettyServerHandler extends ChannelDuplexHandler {
 
+    /**
+     * Dubbo Channel 集合
+     */
     private final Map<String, Channel> channels = new ConcurrentHashMap<String, Channel>(); // <ip:port, channel>
 
+    /**
+     * 第一个暴露服务的url，因为如果接下来还有其他的服务需要暴露，只要暴露的ip+端口没变，就不会重新创建server
+     */
     private final URL url;
 
     private final ChannelHandler handler;

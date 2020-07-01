@@ -102,7 +102,7 @@ public class ProtocolFilterWrapper implements Protocol {
             //此处protocol的真实类型是RegistryProtocol
             return protocol.export(invoker);
         }
-        //建立带有Filter过滤链的Invoker，再暴露服务，然后调用DubboProtocol#export(...) 方法
+        //建立带有Filter过滤链的Invoker，再暴露服务，ProtocolListenerWrapper#export(...) 方法
         return protocol.export(buildInvokerChain(invoker, Constants.SERVICE_FILTER_KEY, Constants.PROVIDER));
     }
 

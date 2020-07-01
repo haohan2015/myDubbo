@@ -256,7 +256,8 @@ public class DubboProtocol extends AbstractProtocol {
         String key = serviceKey(url);
         // 创建 DubboExporter
         DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
-        // 将 <key, exporter> 键值对放入缓存中
+        // 将 <key, exporter> 键值对放入缓存中，这样将来在消费者在调用的时候就会根据对应的key中该Map中找到对应的exporter，
+        // 从而能够找到对应的invoker
         exporterMap.put(key, exporter);
 
         //export an stub service for dispatching event

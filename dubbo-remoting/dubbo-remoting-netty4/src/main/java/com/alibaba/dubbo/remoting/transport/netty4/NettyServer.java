@@ -52,6 +52,9 @@ public class NettyServer extends AbstractServer implements Server {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
 
+    /**
+     * 通道结合，和NettyServerHandler中的channels属性是指向一个map实例
+     */
     private Map<String, Channel> channels; // <ip:port, channel>
 
     private ServerBootstrap bootstrap;

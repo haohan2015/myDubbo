@@ -134,6 +134,7 @@ final class NettyCodecAdapter {
             try {
                 // decode object.
                 do {
+                    // 记录当前读进度
                     saveReaderIndex = message.readerIndex();
                     try {
                         //此处的codec的真是类型是DubboCountCodec
@@ -142,6 +143,7 @@ final class NettyCodecAdapter {
                         buffer = com.alibaba.dubbo.remoting.buffer.ChannelBuffers.EMPTY_BUFFER;
                         throw e;
                     }
+                    // 需要更多输入，即消息不完整，标记回原有读进度，并结束
                     if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
                         message.readerIndex(saveReaderIndex);
                         break;

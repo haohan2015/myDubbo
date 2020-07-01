@@ -51,10 +51,16 @@ public class NettyServer extends AbstractServer implements Server {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
 
+    /**
+     * 该属性和nettyHandler中的channels助兴
+     */
     private Map<String, Channel> channels; // <ip:port, channel>
 
     private ServerBootstrap bootstrap;
 
+    /**
+     * NioServerSocketChannel
+     */
     private org.jboss.netty.channel.Channel channel;
 
     public NettyServer(URL url, ChannelHandler handler) throws RemotingException {
@@ -127,6 +133,7 @@ public class NettyServer extends AbstractServer implements Server {
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }
+        // 优雅关闭工作组
         try {
             if (bootstrap != null) {
                 // release external resource.
@@ -135,6 +142,7 @@ public class NettyServer extends AbstractServer implements Server {
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }
+        // 清空连接到服务器的客户端通道
         try {
             if (channels != null) {
                 channels.clear();

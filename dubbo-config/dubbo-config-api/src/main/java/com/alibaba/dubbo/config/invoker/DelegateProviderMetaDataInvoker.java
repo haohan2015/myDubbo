@@ -23,11 +23,16 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcException;
 
+/**
+ * 该类的作用是把AbstractProxyInvoker的匿名实现类和serverConfig封装到一起
+ * @param <T>
+ */
 public class DelegateProviderMetaDataInvoker<T> implements Invoker {
     protected final Invoker<T> invoker;
     private ServiceConfig metadata;
 
     public DelegateProviderMetaDataInvoker(Invoker<T> invoker,ServiceConfig metadata) {
+        //如果是服务提供者，那么此处的Invoker的真实类型是AbstractProxyInvoker的匿名实现类
         this.invoker = invoker;
         this.metadata = metadata;
     }

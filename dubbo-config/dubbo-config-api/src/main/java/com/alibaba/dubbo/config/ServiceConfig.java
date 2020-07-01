@@ -687,7 +687,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         //通过RegistryProtocol来暴露远程服务
                         /**此处的proxyFactory是自适应，实际是通过Javassist生成代理类，此处的protocol实际类型是Protocol$Adaptive，而适应类里调用的也不是registryProtocol,
                          * 首先是类ProtocolListenerWrapper，该类中继续调用包装类ProtocolFilterWrapper，在该类中基于真实的invoker生成过滤器链条（实际上对于当前的registryProtocol来说是忽略的），最后调用
-                         * registryProtocol生成Exporter，此处的Exporter的真实类型是ListenerExporterWrapper
+                         * registryProtocol生成Exporter，此处的Exporter的真实类型是DestroyableExporter
                          *
                          */
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
@@ -699,7 +699,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
                     // 创建 DelegateProviderMetaDataInvoker 对象
                     DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
-                    // 使用 Protocol 暴露 Invoker 对象
+                    // 使用 Protocol 暴露 Invoker 对象，对于这种直连的场景，此处的Url中protocol是dubbo，这样的首先会调用ProtocolListenerWrapper，
+                    // 然后调用ProtocolFilterWrapper，最后直接调用DubboProtocol，然后返回ListenerExporterWrapper
                     Exporter<?> exporter = protocol.export(wrapperInvoker);
                     // 添加到 `exporters`
                     exporters.add(exporter);

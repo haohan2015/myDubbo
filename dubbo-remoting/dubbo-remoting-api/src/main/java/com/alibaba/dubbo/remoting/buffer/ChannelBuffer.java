@@ -205,6 +205,7 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
 
     /**
      * Returns the number of bytes (octets) this buffer can contain.
+     * 返回buffer的剩余空间
      */
     int capacity();
 
@@ -216,6 +217,7 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * Please note that the behavior of this method is different from that of
      * NIO buffer, which sets the {@code limit} to the {@code capacity} of the
      * buffer.
+     * 充值readerIndex和writeIndex为0，但是不会清除缓存区中的内容
      */
     void clear();
 
@@ -225,6 +227,7 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * This method is identical to {@code buf.copy(buf.readerIndex(),
      * buf.readableBytes())}. This method does not modify {@code readerIndex} or
      * {@code writerIndex} of this buffer.
+     * 返回一个存有从readerIndex开始，readableBytes长度的buffer，不会影响原有的readerIdnex和writeIndex
      */
     ChannelBuffer copy();
 
@@ -233,6 +236,7 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * returned buffer or this buffer does not affect each other at all. This
      * method does not modify {@code readerIndex} or {@code writerIndex} of this
      * buffer.
+     * 返回一个存储有从index开始，length长度的buffer，不会影响原有的readerIdnex和writeIndex
      */
     ChannelBuffer copy(int index, int length);
 
