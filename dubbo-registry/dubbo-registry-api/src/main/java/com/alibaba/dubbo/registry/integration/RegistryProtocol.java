@@ -379,11 +379,12 @@ public class RegistryProtocol implements Protocol {
     @Override
     @SuppressWarnings("unchecked")
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        //设置protocol属性值为zookeeper默认为dubbo，设置之前是registry，移除参数中的registry
+        //此处的type的类型类似com.alibaba.dubbo.demo.DemoService
+        //设置protocol属性值为具体的注册中心协议，比如zookeeper，如果没有注册中心默认为dubbo，设置之前是registry，移除参数中的registry
         url = url.setProtocol(url.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_REGISTRY)).removeParameter(Constants.REGISTRY_KEY);
         // 获取注册中心实例
         Registry registry = registryFactory.getRegistry(url);
-        //此处的type=com.alibaba.dubbo.demo.DemoService
+        //此处的type=com.alibaba.dubbo.demo.DemoService，所以不明白
         if (RegistryService.class.equals(type)) {
             return proxyFactory.getInvoker((T) registry, type, url);
         }
@@ -404,7 +405,7 @@ public class RegistryProtocol implements Protocol {
         //cluster=Cluster$Adaptive
         //registry=ZookeeperRegistry
         //type=com.alibaba.dubbo.demo.DemoService
-        //url为服务引用
+        //url为注册中心URL
         // 调用 doRefer 继续执行服务引用逻辑
         return doRefer(cluster, registry, type, url);
     }
@@ -414,17 +415,20 @@ public class RegistryProtocol implements Protocol {
     }
 
     private <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
-        // 创建 RegistryDirectory 实例
         //此处的type=com.alibaba.dubbo.demo.DemoService
         //url的protocol=zookeeper
         //cluster=Cluster$Adaptive
+
+        // 创建 RegistryDirectory 对象，并设置注册中心
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         // 设置注册中心和协议
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
+
+        // 服务引用配置集合
         // all attributes of REFER_KEY
         Map<String, String> parameters = new HashMap<String, String>(directory.getUrl().getParameters());
-        //消费者地址
+
         // 生成服务消费者链接
         URL subscribeUrl = new URL(Constants.CONSUMER_PROTOCOL, parameters.remove(Constants.REGISTER_IP_KEY), 0, type.getName(), parameters);
         if (!Constants.ANY_VALUE.equals(url.getServiceInterface())
@@ -434,8 +438,8 @@ public class RegistryProtocol implements Protocol {
             registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
                     Constants.CHECK_KEY, String.valueOf(false)));
         }
-        // 订阅 providers、configurators、routers 等节点数据，完成订阅后，RegistryDirectory 会收到这几个节点下的子节点信息。
-        //订阅，此处设置属性category为providers,configurators,routers
+        //向注册中心订阅服务提供者 + 路由规则 + 配置规则。在该方法中，会循环获得到的服务体用这列表，
+        // 调用 Protocol#refer(type, url) 方法，创建每个调用服务的 Invoker 对象。
         directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY,
                 Constants.PROVIDERS_CATEGORY
                         + "," + Constants.CONFIGURATORS_CATEGORY
@@ -445,6 +449,8 @@ public class RegistryProtocol implements Protocol {
         //对于有多个注册中心，或者有多个提供者，那么通过集群的方式合并
         //最后实际调用的是MockClusterWrapper，最后返回的是MockClusterInvoker
         Invoker invoker = cluster.join(directory);
+
+        // 向本地注册表，注册消费者
         ProviderConsumerRegTable.registerConsumer(invoker, url, subscribeUrl, directory);
         return invoker;
     }

@@ -249,7 +249,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                         //设置实际注册中心协议，如果注册中心是zookeeper，那么getProtocol获取的就是zookeeper
                         url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
                         // 将 URL 协议头设置为 registry
-                        //设置注册协议
+                        //设置通用注册协议
                         url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
                         // 通过判断条件，决定是否添加 url 到 registryList 中，条件如下：
                         // (服务提供者 && register = true 或 null)

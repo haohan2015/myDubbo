@@ -64,17 +64,42 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     private static final long serialVersionUID = -5864351140409987595L;
 
+    /**
+     * 协议自适应
+     */
     private static final Protocol refprotocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
+    /**
+     * 集群自适应
+     */
     private static final Cluster cluster = ExtensionLoader.getExtensionLoader(Cluster.class).getAdaptiveExtension();
 
+    /**
+     * 代理自适应
+     */
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+
+    /**
+     * 如果是直连的话就是直连地址集合，如果是通过注册中心的话就是注册中心集合
+     */
     private final List<URL> urls = new ArrayList<URL>();
+
+    /**
+     * 引用接口名称
+     */
     // interface name
     private String interfaceName;
+
+    /**
+     * 引用接口
+     */
     private Class<?> interfaceClass;
     // client type
     private String client;
+
+    /**
+     * 直连提供者地址
+     */
     // url for peer-to-peer invocation
     private String url;
     // method configs
@@ -442,7 +467,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         } else {
             // 远程引用
-            // url 不为空，表明用户可能想进行点对点调用，或者指定了注册中心
+            // url 不为空，1.用户想跳过注册中心直连服务提供者，2.用户想单独指定注册中心
             if (url != null && url.length() > 0) { // user specified URL, could be peer-to-peer address, or register center's address.
                 // 当需要配置多个 url 时，可用分号进行分割，这里会进行切分
                 String[] us = Constants.SEMICOLON_SPLIT_PATTERN.split(url);
@@ -466,16 +491,17 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     }
                 }
             } else { // assemble URL from register center's configuration
-                //加载注册中心的url
+                //加载注册中心的url的数组
                 List<URL> us = loadRegistries(false);
                 if (us != null && !us.isEmpty()) {
                     for (URL u : us) {
                         //加载监控地址
                         URL monitorUrl = loadMonitor(u);
+                        // 服务引用配置对象 `map`，带上监控中心的 URL
                         if (monitorUrl != null) {
                             map.put(Constants.MONITOR_KEY, URL.encode(monitorUrl.toFullString()));
                         }
-                        // 添加 refer 参数到 url 中，并将 url 添加到 urls 中
+                        // 注册中心的地址，带上服务引用的配置参数
                         urls.add(u.addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map)));
                     }
                 }

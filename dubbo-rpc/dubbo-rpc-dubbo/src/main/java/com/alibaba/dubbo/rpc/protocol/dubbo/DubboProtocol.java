@@ -71,13 +71,15 @@ public class DubboProtocol extends AbstractProtocol {
     private final Map<String, ExchangeServer> serverMap = new ConcurrentHashMap<String, ExchangeServer>(); // <host:port,Exchanger>
 
     /**
-     * 通信客户端集合，主要是服务消费者需要，同一个ip+端口号只会存在一条记录
+     * 通信客户端集合，服务消费者需要，同一个ip+端口号只会存在一条记录
      *
      * key: 服务器地址。格式为：host:port
      */
     private final Map<String, ReferenceCountExchangeClient> referenceClientMap = new ConcurrentHashMap<String, ReferenceCountExchangeClient>(); // <host:port,Exchanger>
 
+
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap = new ConcurrentHashMap<String, LazyConnectExchangeClient>();
+
     private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<String, Object>();
     private final Set<String> optimizers = new ConcurrentHashSet<String>();
     //consumer side export a stub service for dispatching event
@@ -391,14 +393,27 @@ public class DubboProtocol extends AbstractProtocol {
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
         //此处的serviceType的类型是com.alibaba.dubbo.demo.DemoService
         //url的protocol=dubbo
+
+        // 初始化序列化优化器
         optimizeSerialization(url);
+
+
         // create rpc invoker.
-        // 创建 DubboInvoker
+        // 获得远程通信客户端数组
+        // 创建 DubboInvoker 对象
         DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClients(url), invokers);
+
+        // 添加到 `invokers`
         invokers.add(invoker);
         return invoker;
     }
 
+    /**
+     * 获得连接服务提供者的远程通信客户端数组
+     *
+     * @param url 服务提供者 URL
+     * @return 远程通信客户端
+     */
     private ExchangeClient[] getClients(URL url) {
         // whether to share connection
         // 是否共享连接
@@ -406,11 +421,13 @@ public class DubboProtocol extends AbstractProtocol {
         // 获取连接数，默认为0，表示未配置
         int connections = url.getParameter(Constants.CONNECTIONS_KEY, 0);
         // if not configured, connection is shared, otherwise, one connection for one service
+        // 未配置时，默认共享
         if (connections == 0) {
             service_share_connect = true;
             connections = 1;
         }
 
+        // 创建连接服务提供者的 ExchangeClient 对象数组
         ExchangeClient[] clients = new ExchangeClient[connections];
         for (int i = 0; i < clients.length; i++) {
             if (service_share_connect) {

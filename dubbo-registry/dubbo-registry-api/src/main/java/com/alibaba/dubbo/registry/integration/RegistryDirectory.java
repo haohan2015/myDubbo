@@ -105,6 +105,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.serviceType = serviceType;
         //类似com.alibaba.dubbo.registry.RegistryService
         this.serviceKey = url.getServiceKey();
+        //引入配置
         this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
         this.overrideDirectoryUrl = this.directoryUrl = url.setPath(url.getServiceInterface()).clearParameters().addParameters(queryMap).removeParameter(Constants.MONITOR_KEY);
         String group = directoryUrl.getParameter(Constants.GROUP_KEY, "");
@@ -163,11 +164,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     public void subscribe(URL url) {
+        //此处的url是服务消费者URL
         setConsumerUrl(url);
         //此处的registry类型为ZookeeperRegistry，实际调用的是FailbackRegistry的subscribe
         //此处的this类型RegistryDirectory也同样是个NotifyListener
         registry.subscribe(url, this);
     }
+
 
     @Override
     public void destroy() {
