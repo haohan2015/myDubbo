@@ -609,6 +609,8 @@ public class RegistryProtocol implements Protocol {
         private URL registerUrl;
 
         public DestroyableExporter(Exporter<T> exporter, Invoker<T> originInvoker, URL subscribeUrl, URL registerUrl) {
+            //此处的exporter的真实类型是ExporterChangeableWrapper
+            //此处的originInvoker的真实类型是DelegateProviderMetaDataInvoker
             this.exporter = exporter;
             this.originInvoker = originInvoker;
             this.subscribeUrl = subscribeUrl;

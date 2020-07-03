@@ -64,13 +64,19 @@ public class DubboProtocol extends AbstractProtocol {
     private static DubboProtocol INSTANCE;
 
     /**
-     * 通信服务器集合
+     * 通信服务器集合，同一个ip+端口号只会存在一条记录
      *
      * key: 服务器地址。格式为：host:port
      */
     private final Map<String, ExchangeServer> serverMap = new ConcurrentHashMap<String, ExchangeServer>(); // <host:port,Exchanger>
 
+    /**
+     * 通信客户端集合，主要是服务消费者需要，同一个ip+端口号只会存在一条记录
+     *
+     * key: 服务器地址。格式为：host:port
+     */
     private final Map<String, ReferenceCountExchangeClient> referenceClientMap = new ConcurrentHashMap<String, ReferenceCountExchangeClient>(); // <host:port,Exchanger>
+
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap = new ConcurrentHashMap<String, LazyConnectExchangeClient>();
     private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<String, Object>();
     private final Set<String> optimizers = new ConcurrentHashSet<String>();
@@ -290,7 +296,7 @@ public class DubboProtocol extends AbstractProtocol {
         // 获取 host:port，并将其作为服务器实例的 key，用于标识当前的服务器实例
         String key = url.getAddress();
         //client can export a service which's only for server to invoke
-        //只有server端才能导出服务
+        //配置项 isserver ，可以暴露一个仅当前 JVM 可调用的服务。目前该配置项已经不存在。
         boolean isServer = url.getParameter(Constants.IS_SERVER_KEY, true);
         if (isServer) {
             // 访问缓存
@@ -300,8 +306,7 @@ public class DubboProtocol extends AbstractProtocol {
                 serverMap.put(key, createServer(url));
             } else {
                 // server supports reset, use together with override
-                //如果服务已经导出，那么重置
-                // 服务器已创建，则根据 url 中的配置重置服务器
+                // 服务器已创建，则根据 url 中的配置重置服务器，此处的server的真实类型是HeaderExchangeServer
                 server.reset(url);
             }
         }
@@ -309,7 +314,7 @@ public class DubboProtocol extends AbstractProtocol {
 
     private ExchangeServer createServer(URL url) {
         // send readonly event when server closes, it's enabled by default
-        //当服务关闭的时候发送一个只读时间，默认是开启的
+        //当服务关闭的时候发送一个只读事件，默认是开启的
         url = url.addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
         // enable heartbeat by default
         //开启心跳标识
@@ -324,8 +329,7 @@ public class DubboProtocol extends AbstractProtocol {
         if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str))
             throw new RpcException("Unsupported server type: " + str + ", url: " + url);
 
-        //添加codec属性的值为dubbo
-        // 添加编码解码器参数
+        //添加codec属性的值为dubbo，即 DubboCountCodec
         url = url.addParameter(Constants.CODEC_KEY, DubboCodec.NAME);
         ExchangeServer server;
         try {

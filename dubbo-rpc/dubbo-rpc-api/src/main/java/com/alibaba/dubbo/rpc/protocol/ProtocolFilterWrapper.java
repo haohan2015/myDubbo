@@ -96,8 +96,8 @@ public class ProtocolFilterWrapper implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        //当第一次调用，也就是protocol是registryProtocol时，此处的Invoker的真实类型是DelegateProviderMetaDataInvoker
-        //当第二次调用，protocol是DubboProtocol时，此处的incoker的真实类型是InvokerDelegete
+        //远程暴露当第一次调用，也就是protocol是registryProtocol时，此处的Invoker的真实类型是DelegateProviderMetaDataInvoker
+        //远程暴露当第二次调用，protocol是DubboProtocol时，此处的incoker的真实类型是InvokerDelegete
         if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
             //此处protocol的真实类型是RegistryProtocol
             return protocol.export(invoker);

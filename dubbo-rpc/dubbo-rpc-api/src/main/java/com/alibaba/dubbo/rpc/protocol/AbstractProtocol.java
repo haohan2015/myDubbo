@@ -43,6 +43,8 @@ public abstract class AbstractProtocol implements Protocol {
      *
      * key: 服务键 {@link #serviceKey(URL)} 或 {@link URL#getServiceKey()} 。
      * 该集合拥有该协议中，所有暴露中的 Exporter 对象，也就是同一个服务的同一个协议只会有一个具体的协议实例，比如InjvmProtocol协议实例
+     * 但是同一个协议的不同提供服务，也就是接口，在Map中会有多个实例，key类似demoGroup/com.alibaba.dubbo.demo.DemoService:1.0.1:20880
+     * 同一个接口再次暴露key=demoGroup/com.alibaba.dubbo.demo.DemoService2:1.0.1:20880
      */
     protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<String, Exporter<?>>();
 
