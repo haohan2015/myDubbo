@@ -33,12 +33,28 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractZookeeperClient.class);
 
+    /**
+     * 注册中心 URL
+     */
     private final URL url;
 
+    /**
+     * StateListener 集合
+     */
     private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<StateListener>();
 
+    /**
+     * ChildListener 集合
+     *
+     * key1：节点路径
+     * key2：ChildListener 对象
+     * value ：监听器具体对象。不同 Zookeeper 客户端，实现会不同。
+     */
     private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners = new ConcurrentHashMap<String, ConcurrentMap<ChildListener, TargetChildListener>>();
 
+    /**
+     * 是否关闭
+     */
     private volatile boolean closed = false;
 
     public AbstractZookeeperClient(URL url) {
@@ -66,6 +82,7 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
                 return;
             }
         }
+        // 循环创建父路径
         int i = path.lastIndexOf('/');
         if (i > 0) {
             // 递归创建上一级路径
@@ -96,13 +113,14 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
     @Override
     public List<String> addChildListener(String path, final ChildListener listener) {
         //判断该URL有没有子监听者列表，如果没有则创建
+        // 获得路径下的监听器数组
         ConcurrentMap<ChildListener, TargetChildListener> listeners = childListeners.get(path);
         if (listeners == null) {
             childListeners.putIfAbsent(path, new ConcurrentHashMap<ChildListener, TargetChildListener>());
             listeners = childListeners.get(path);
         }
         //获取该子监听者的目标子监听者，该目标子监听者用于监听真实的注册中心节点变化情况
-        //targetListener的真实类型是CuratorWatcherImpl
+        //targetListener针对不同的客户端，实现不同，如果客户端是Curator，的真实类型是CuratorWatcherImpl
         TargetChildListener targetListener = listeners.get(listener);
         if (targetListener == null) {
             //不存在的话就创建，，此处的createTargetChildListener是个模板方法
@@ -111,7 +129,8 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
             listeners.putIfAbsent(listener, createTargetChildListener(path, listener));
             targetListener = listeners.get(listener);
         }
-        //添加监听者
+
+        // 向 Zookeeper ，真正发起订阅
         // 如果当前的注册中心是zookeeper，并且客户端选择的是CuratorZookeeperClient，
         // 那么就是调用的CuratorZookeeperClient的addTargetChildListener
         return addTargetChildListener(path, targetListener);
@@ -123,6 +142,7 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
         if (listeners != null) {
             TargetChildListener targetListener = listeners.remove(listener);
             if (targetListener != null) {
+                // 向 Zookeeper ，真正发起取消订阅
                 removeTargetChildListener(path, targetListener);
             }
         }

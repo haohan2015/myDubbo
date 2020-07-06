@@ -77,7 +77,9 @@ public class DubboProtocol extends AbstractProtocol {
      */
     private final Map<String, ReferenceCountExchangeClient> referenceClientMap = new ConcurrentHashMap<String, ReferenceCountExchangeClient>(); // <host:port,Exchanger>
 
-
+    /**
+     * 幽灵客户端，保存那些因为不被引用，导致真实客户端被关闭的客户端，其实就是一个延迟连接客户端集合
+     */
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap = new ConcurrentHashMap<String, LazyConnectExchangeClient>();
 
     private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<String, Object>();
@@ -392,7 +394,7 @@ public class DubboProtocol extends AbstractProtocol {
     @Override
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
         //此处的serviceType的类型是com.alibaba.dubbo.demo.DemoService
-        //url的protocol=dubbo
+        //url的protocol=dubbo，并且是服务消费方的url，包含了服务提供者地址
 
         // 初始化序列化优化器
         optimizeSerialization(url);
@@ -485,8 +487,10 @@ public class DubboProtocol extends AbstractProtocol {
         // 获取客户端类型，默认为 netty
         String str = url.getParameter(Constants.CLIENT_KEY, url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_CLIENT));
 
+        // 设置编解码器为 Dubbo ，即 DubboCountCodec
         // 添加编解码和心跳包参数到 url 中
         url = url.addParameter(Constants.CODEC_KEY, DubboCodec.NAME);
+        // 默认开启 heartbeat
         // enable heartbeat by default
         url = url.addParameterIfAbsent(Constants.HEARTBEAT_KEY, String.valueOf(Constants.DEFAULT_HEARTBEAT));
 
@@ -505,7 +509,7 @@ public class DubboProtocol extends AbstractProtocol {
                 // 创建懒加载 ExchangeClient 实例
                 client = new LazyConnectExchangeClient(url, requestHandler);
             } else {
-                // 创建普通 ExchangeClient 实例
+                // 直接连接，创建 HeaderExchangeClient 对象
                 client = Exchangers.connect(url, requestHandler);
             }
         } catch (RemotingException e) {

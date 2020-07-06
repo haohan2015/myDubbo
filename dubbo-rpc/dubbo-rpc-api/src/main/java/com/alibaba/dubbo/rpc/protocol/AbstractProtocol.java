@@ -49,7 +49,7 @@ public abstract class AbstractProtocol implements Protocol {
     protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<String, Exporter<?>>();
 
     //TODO SOFEREFENCE
-    //服务消费端创建的invoker集合
+    //服务消费端创建的DubboInvoker集合，一个具体的消费者对应一个
     protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<Invoker<?>>();
 
     protected static String serviceKey(URL url) {

@@ -501,7 +501,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         if (monitorUrl != null) {
                             map.put(Constants.MONITOR_KEY, URL.encode(monitorUrl.toFullString()));
                         }
-                        // 注册中心的地址，带上服务引用的配置参数
+                        // 注册中心的地址，带上服务引用的配置参数，通过这种方式注册中心的URL中包含了服务引用的配置
                         urls.add(u.addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map)));
                     }
                 }
@@ -534,9 +534,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     // use AvailableCluster only when register's cluster is available
                     // 如果注册中心链接不为空，则将使用 AvailableCluster
                     URL u = registryURL.addParameter(Constants.CLUSTER_KEY, AvailableCluster.NAME);
-                    // 创建 StaticDirectory 实例，并由 Cluster 对多个 Invoker 进行合并
+                    // 创建 StaticDirectory 实例，并由 Cluster 对多个 Invoker 进行合并，此处处理的是多个注册中心的集群问题
                     invoker = cluster.join(new StaticDirectory(u, invokers));
-                } else { // not a registry url
+                } else {
+                    //说明是多个直连地址，此处处理的是多个直连地址的集群问题
+                    // not a registry url
                     invoker = cluster.join(new StaticDirectory(invokers));
                 }
             }

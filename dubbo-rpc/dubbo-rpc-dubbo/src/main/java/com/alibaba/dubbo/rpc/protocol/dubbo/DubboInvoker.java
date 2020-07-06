@@ -42,14 +42,27 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class DubboInvoker<T> extends AbstractInvoker<T> {
 
+    //远程客户端数组，通常情况下一个远端提供者对应一个client，ip+port确定一个，但是当配置了某个服务消费者需要多个连接是，那么就会存在多个不相同client
     private final ExchangeClient[] clients;
 
+    /**
+     * 使用的 {@link #clients} 的位置，当一个具体的服务消费者有多个独立的client的时候就会通过改变量来轮询调用
+     */
     private final AtomicPositiveInteger index = new AtomicPositiveInteger();
 
+    /**
+     * 版本
+     */
     private final String version;
 
+    /**
+     * 销毁锁
+     */
     private final ReentrantLock destroyLock = new ReentrantLock();
 
+    /**
+     * Invoker 集合，从 {@link DubboProtocol#invokers} 获取
+     */
     private final Set<Invoker<?>> invokers;
 
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients) {
@@ -57,6 +70,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     }
 
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients, Set<Invoker<?>> invokers) {
+        //当配置了一个服务消费者需要多个连接时，那么针对该提供者会创建多个不相同client，也就会是一个client数组，默认针对一个提供者，
+        // 所有具体的消费服务都公用一个client
         super(serviceType, url, new String[]{Constants.INTERFACE_KEY, Constants.GROUP_KEY, Constants.TOKEN_KEY, Constants.TIMEOUT_KEY});
         this.clients = clients;
         // get version.

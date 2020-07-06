@@ -38,6 +38,9 @@ import java.util.List;
 
 public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatcher> {
 
+    /**
+     * client 对象
+     */
     private final CuratorFramework client;
 
     public CuratorZookeeperClient(URL url) {
@@ -45,9 +48,9 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
         try {
             // 创建 CuratorFramework 构造器
             CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
-                    .connectString(url.getBackupAddress())
-                    .retryPolicy(new RetryNTimes(1, 1000))
-                    .connectionTimeoutMs(5000);
+                    .connectString(url.getBackupAddress())// 连接地址
+                    .retryPolicy(new RetryNTimes(1, 1000))// 重试策略，1 次，间隔 1000 ms
+                    .connectionTimeoutMs(5000);// 连接超时时间
             String authority = url.getAuthority();
             if (authority != null && authority.length() > 0) {
                 builder = builder.authorization("digest", authority.getBytes());

@@ -31,15 +31,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * dubbo protocol support class.
+ * 支持指向计数的信息交换客户端实现类
  */
 @SuppressWarnings("deprecation")
 final class ReferenceCountExchangeClient implements ExchangeClient {
 
     private final URL url;
+
+    /**
+     * 指向数量
+     */
     private final AtomicInteger refenceCount = new AtomicInteger(0);
 
+    /**
+     * 幽灵客户端，保存那些因为不被引用，导致真实客户端被关闭的客户端
+     */
     //    private final ExchangeHandler handler;
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap;
+
+    /**
+     * 客户端
+     */
     private ExchangeClient client;
 
 
