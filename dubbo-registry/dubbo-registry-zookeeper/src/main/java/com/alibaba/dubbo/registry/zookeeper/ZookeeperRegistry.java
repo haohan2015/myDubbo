@@ -44,16 +44,34 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     private final static Logger logger = LoggerFactory.getLogger(ZookeeperRegistry.class);
 
+    /**
+     * 默认端口
+     */
     private final static int DEFAULT_ZOOKEEPER_PORT = 2181;
 
+    /**
+     * 默认 Zookeeper 根节点
+     */
     private final static String DEFAULT_ROOT = "dubbo";
 
+    /**
+     * Zookeeper 根节点
+     */
     private final String root;
 
+    /**
+     * Service 接口全名集合，一般用户监控中心监控整个Services层
+     */
     private final Set<String> anyServices = new ConcurrentHashSet<String>();
 
+    /**
+     * 监听器集合，建立 NotifyListener 和 ChildListener 的映射关系
+     */
     private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> zkListeners = new ConcurrentHashMap<URL, ConcurrentMap<NotifyListener, ChildListener>>();
 
+    /**
+     * Zookeeper 客户端
+     */
     private final ZookeeperClient zkClient;
 
     public ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
@@ -63,16 +81,17 @@ public class ZookeeperRegistry extends FailbackRegistry {
         if (url.isAnyHost()) {
             throw new IllegalStateException("registry address == null");
         }
-        //获取分组情况，默认dubbo
+        // 获得 Zookeeper 根节点，默认dubbo
         String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
         //如果分组标识前面没有“/”，那么加上
         if (!group.startsWith(Constants.PATH_SEPARATOR)) {
             group = Constants.PATH_SEPARATOR + group;
         }
         this.root = group;
-        //此处如果指定的注册中心是zookeeper，那么此处最终调用的是CuratorZookeeperTransporter的connect方法
+        //此处如果指定的注册中心是zookeeper，并且客户端是Curator，
+        // 那么此处最终调用的是CuratorZookeeperTransporter的connect方法，并且zkClient的真实类型是CuratorZookeeperClient
         zkClient = zookeeperTransporter.connect(url);
-        //添加状态监视器
+        // 添加 StateListener 对象。该监听器，在重连时，调用恢复方法。
         zkClient.addStateListener(new StateListener() {
             @Override
             public void stateChanged(int state) {
@@ -139,6 +158,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     @Override
     protected void doSubscribe(final URL url, final NotifyListener listener) {
         try {
+            //一般用于监控中心监控整个Service层
             if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
                 String root = toRootPath();
                 ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
@@ -259,6 +279,13 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
     }
 
+    /**
+     * 获得根目录
+     *
+     * Root
+     *
+     * @return 路径
+     */
     private String toRootDir() {
         if (root.equals(Constants.PATH_SEPARATOR)) {
             return root;
@@ -266,10 +293,23 @@ public class ZookeeperRegistry extends FailbackRegistry {
         return root + Constants.PATH_SEPARATOR;
     }
 
+    /**
+     * Root
+     *
+     * @return 根路径
+     */
     private String toRootPath() {
         return root;
     }
 
+    /**
+     * 获得服务路径
+     *
+     * Root + Type
+     *
+     * @param url URL
+     * @return 服务路径
+     */
     private String toServicePath(URL url) {
         String name = url.getServiceInterface();
         if (Constants.ANY_VALUE.equals(name)) {
@@ -302,10 +342,28 @@ public class ZookeeperRegistry extends FailbackRegistry {
         return paths;
     }
 
+    /**
+     * 获得分类路径
+     *
+     * Root + Service + Type
+     *
+     * @param url URL
+     * @return 分类路径
+     */
     private String toCategoryPath(URL url) {
         return toServicePath(url) + Constants.PATH_SEPARATOR + url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
     }
 
+    /**
+     * 获得 URL 的路径
+     *
+     * Root + Service + Type + URL
+     *
+     * 被 {@link #doRegister(URL)} 和 {@link #doUnregister(URL)} 调用
+     *
+     * @param url URL
+     * @return 路径
+     */
     private String toUrlPath(URL url) {
         //最终返回的类似/dubbo/com.alibaba.dubbo.demo.DemoService/providers/dubbo://172.16.10.53:20880/
         // com.alibaba.dubbo.demo.DemoService?anyhost=true&application=demo-provider&dubbo=2.0.2&generic=false&interface=com.alibaba.dubbo.demo.DemoService&methods=sayHello&pid=21176&side=provider&timestamp=1561024413745

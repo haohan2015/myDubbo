@@ -32,7 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * AbstractRegistryFactory. (SPI, Singleton, ThreadSafe)
- *
+ * 实现了 Registry 的容器管理
  * @see com.alibaba.dubbo.registry.RegistryFactory
  */
 public abstract class AbstractRegistryFactory implements RegistryFactory {
@@ -43,6 +43,9 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     // The lock for the acquisition process of the registry
     private static final ReentrantLock LOCK = new ReentrantLock();
 
+    /**
+     * Registry 集合，key类似zookeeper://10.20.0.12:2181/com.alibaba.dubbo.registry.RegistryService
+     */
     // Registry Collection Map<RegistryAddress, Registry>
     private static final Map<String, Registry> REGISTRIES = new ConcurrentHashMap<String, Registry>();
 
@@ -90,7 +93,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         // Lock the registry access process to ensure a single instance of the registry
         LOCK.lock();
         try {
-            //从缓存中获取，如果为命中，那么就创建
+            //从缓存中获取，如果为命中，那么就不创建
             Registry registry = REGISTRIES.get(key);
             if (registry != null) {
                 return registry;

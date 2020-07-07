@@ -55,25 +55,54 @@ import java.util.Set;
 
 /**
  * RegistryDirectory
- *
+ * 该类是多例的，只要有一个服务消费者就对应一个实例
  */
 public class RegistryDirectory<T> extends AbstractDirectory<T> implements NotifyListener {
 
     private static final Logger logger = LoggerFactory.getLogger(RegistryDirectory.class);
 
+    /**
+     * 集群自适应工厂
+     */
     private static final Cluster cluster = ExtensionLoader.getExtensionLoader(Cluster.class).getAdaptiveExtension();
 
+    /**
+     * 路由自适应工厂
+     */
     private static final RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getAdaptiveExtension();
 
+    /**
+     * 配置自适应工厂
+     */
     private static final ConfiguratorFactory configuratorFactory = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class).getAdaptiveExtension();
+
+    //类似com.alibaba.dubbo.registry.RegistryService
     private final String serviceKey; // Initialization at construction time, assertion not null
+
+    //类似com.alibaba.dubbo.demo.DemoService
     private final Class<T> serviceType; // Initialization at construction time, assertion not null
+
+    //消费方，服务引用配置
     private final Map<String, String> queryMap; // Initialization at construction time, assertion not null
+
+    //注册中心url
     private final URL directoryUrl; // Initialization at construction time, assertion not null, and always assign non null value
+
+    //消费者方法名集合
     private final String[] serviceMethods;
+
+    //是否消费多个组
     private final boolean multiGroup;
+
+    //协议
     private Protocol protocol; // Initialization at the time of injection, the assertion is not null
+
+    //注册中心
     private Registry registry; // Initialization at the time of injection, the assertion is not null
+
+    /**
+     * 是否禁止访问，当改消费者没有一个提供者的时候就会禁止
+     */
     private volatile boolean forbidden = false;
 
     private volatile URL overrideDirectoryUrl; // Initialization at construction time, assertion not null, and always assign non null value
@@ -86,12 +115,15 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      */
     private volatile List<Configurator> configurators; // The initial value is null and the midway may be assigned to null, please use the local variable reference
 
+    //缓存了服务地址到提供者
     // Map<url, Invoker> cache service url to invoker mapping.
     private volatile Map<String, Invoker<T>> urlInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
 
+    //缓存了方法名到提供者
     // Map<methodName, Invoker> cache service method to invokers mapping.
     private volatile Map<String, List<Invoker<T>>> methodInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
 
+    //缓存的提供者Url
     // Set<invokerUrls> cache invokeUrls to invokers mapping.
     private volatile Set<URL> cachedInvokerUrls; // The initial value is null and the midway may be assigned to null, please use the local variable reference
 
@@ -177,6 +209,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (isDestroyed()) {
             return;
         }
+        //先取消订阅
         // unsubscribe.
         try {
             if (getConsumerUrl() != null && registry != null && registry.isAvailable()) {
@@ -185,7 +218,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         } catch (Throwable t) {
             logger.warn("unexpeced error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
         }
+        //标识已经销毁
         super.destroy(); // must be executed after unsubscribing
+
+        //销毁改服务消费者的所有invoker
         try {
             destroyAllInvokers();
         } catch (Throwable t) {
@@ -430,6 +466,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             // 合并 url
             URL url = mergeUrl(providerUrl);
 
+            //dubbo://172.16.10.53:20880/com.alibaba.dubbo.demo.DemoService?anyhost=true&application=demo-consumer&
+            // check=false&dubbo=2.0.2&generic=false&interface=com.alibaba.dubbo.demo.DemoService&methods=sayHello&monitor=dubbo%3A%2F%2F127.0.0.1%3A2181%2Fcom.alibaba.dubbo.registry.RegistryService%3Fapplication%3Ddemo-consumer%26dubbo%3D2.0.2%26pid%3D74640%26protocol%3Dregistry%26qos.port%3D33333%26refer%3Dapplication%253Ddemo-consumer%2526dubbo%253D2.0.2%2526interface%253Dcom.alibaba.dubbo.monitor.MonitorService%2526pid%253D74640%2526qos.port%253D33333%2526register.ip%253D172.16.10.53%2526timestamp%253D1594125486794%26registry%3Dzookeeper%26timestamp%3D1594125486731&pid=74640&qos.port=33333&register.ip=172.16.10.53&remote.timestamp=1594125403713&side=consumer&timestamp=1594125486595
             String key = url.toFullString(); // The parameter urls are sorted
             if (keys.contains(key)) { // Repeated url
                 // 忽略重复 ur

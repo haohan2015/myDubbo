@@ -24,16 +24,37 @@ import com.alibaba.dubbo.rpc.RpcException;
 
 /**
  * @date 2017/11/23
+ * 相比纯粹的 Invoker 对象，又多了运维命令需要的属性。例如 isReg 状态属性，可以在使用下线服务命令后，标记为 false
  */
 public class ProviderInvokerWrapper<T> implements Invoker {
+
+    /**
+     * Invoker 对象
+     */
     private Invoker<T> invoker;
+
+    /**
+     * 原始 URL
+     */
     private URL originUrl;
+
+    /**
+     * 注册中心 URL
+     */
     private URL registryUrl;
+
+    /**
+     * 服务提供者 URL
+     */
     private URL providerUrl;
+
+    /**
+     * 是否注册
+     */
     private volatile boolean isReg;
 
     public ProviderInvokerWrapper(Invoker<T> invoker,URL registryUrl,URL providerUrl) {
-        //此处的invoker的类型是DelegateProviderMetaDataInvoker
+        //对于服务提供者，此处的invoker的类型是DelegateProviderMetaDataInvoker
         this.invoker = invoker;
         this.originUrl = URL.valueOf(invoker.getUrl().toFullString());
         this.registryUrl = URL.valueOf(registryUrl.toFullString());
