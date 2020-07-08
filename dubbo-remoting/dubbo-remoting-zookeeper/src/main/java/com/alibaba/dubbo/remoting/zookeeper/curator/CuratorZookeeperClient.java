@@ -182,7 +182,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorWatch
                         // if path is null, curator using watcher will throw NullPointerException.
                         // if client connect or disconnect to server, zookeeper will queue
                         // watched event(Watcher.Event.EventType.None, .., path = null).
-                        //如果path为空，那么创建一个空的当前路径节点的子节点列表，否则获取该路径节点的子节点
+                        //如果path为空，那么创建一个空的当前路径节点的子节点列表，否则获取该路径节点的子节点，并且继续在当前节点注册监听
                         StringUtils.isNotEmpty(path)
                                 ? client.getChildren().usingWatcher(this).forPath(path)
                                 : Collections.<String>emptyList());

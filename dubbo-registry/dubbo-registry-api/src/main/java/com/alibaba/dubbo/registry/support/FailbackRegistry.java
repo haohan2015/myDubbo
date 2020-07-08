@@ -89,7 +89,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         super(url);
         //注册中心重试周期，默认5000毫秒
         this.retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
-        //启动一个定时线程池来不断重试
+        //启动一个定时线程池来不断重试,处理因为中间断开连接导致的订阅，取消订阅，通知失败的事件
         this.retryFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
@@ -234,9 +234,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         } catch (Exception e) {
             Throwable t = e;
 
-            // 如果有缓存的 URL 集合，进行通知。后续订阅成功后，会使用最新的 URL 集合，进行通知。
-            //就是如果准备订阅监听某个Url，但是该url在本地有缓存，所以先取出本地的缓存url来进行通知，
-            // 然后等真实订阅后在用最新的Url集合通知
+            // 如果有本地缓存的 URL 集合，进行通知。后续订阅成功后，会使用最新的 URL 集合，进行通知。
+            //就是如果准备订阅监听某个Url，订阅失败后，但是该url在本地有缓存，所以先取出本地的缓存url来进行通知，
+            // 然后等真实订阅后在用最新的Url集合通知，这个机制就是不论是consumer端还是provider端都会把注册中心的信息本地持久化存储
             List<URL> urls = getCacheUrls(url);
             if (urls != null && !urls.isEmpty()) {
                 notify(url, listener, urls);

@@ -382,7 +382,7 @@ public class RegistryProtocol implements Protocol {
         //此处的type的类型类似com.alibaba.dubbo.demo.DemoService
         //设置protocol属性值为具体的注册中心协议，比如zookeeper，如果没有注册中心默认为dubbo，设置之前是registry，移除参数中的registry
         url = url.setProtocol(url.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_REGISTRY)).removeParameter(Constants.REGISTRY_KEY);
-        // 获取注册中心实例
+        // 此处的registryFactory是一个自适应的
         Registry registry = registryFactory.getRegistry(url);
         //此处的type=com.alibaba.dubbo.demo.DemoService，所以不明白
         if (RegistryService.class.equals(type)) {
@@ -508,10 +508,12 @@ public class RegistryProtocol implements Protocol {
         @Override
         public synchronized void notify(List<URL> urls) {
             logger.debug("original override urls: " + urls);
+            //判断一下提供者和从注册中心获取的Url是否匹配
             List<URL> matchedUrls = getMatchedUrls(urls, subscribeUrl);
             logger.debug("subscribe url: " + subscribeUrl + ", override urls: " + matchedUrls);
             // No matching results
             if (matchedUrls.isEmpty()) {
+                //都不匹配则返回
                 return;
             }
 
@@ -534,6 +536,7 @@ public class RegistryProtocol implements Protocol {
             //The current, may have been merged many times
             URL currentUrl = exporter.getInvoker().getUrl();
             //Merged with this configuration
+            //基于配置规则匹配完提供者地址之后，需要重新暴露改服务
             URL newUrl = getConfigedInvokerUrl(configurators, originUrl);
             if (!currentUrl.equals(newUrl)) {
                 RegistryProtocol.this.doChangeLocalExport(originInvoker, newUrl);
