@@ -147,10 +147,12 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         RpcInvocation invocation = (RpcInvocation) inv;
         // 设置 Invoker
         invocation.setInvoker(this);
+        // 添加公用的隐式传参，例如，`path` `interface` 等等，详见 RpcInvocation 类。
         if (attachment != null && attachment.size() > 0) {
             // 设置 attachment
             invocation.addAttachmentsIfAbsent(attachment);
         }
+        // 添加自定义的隐士传参
         Map<String, String> contextAttachments = RpcContext.getContext().getAttachments();
         if (contextAttachments != null && contextAttachments.size() != 0) {
             /**
@@ -162,15 +164,18 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
             // 添加 contextAttachments 到 RpcInvocation#attachment 变量中
             invocation.addAttachments(contextAttachments);
         }
+        // 设置 `async=true` ，若为异步方法
         if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)) {
             // 设置异步信息到 RpcInvocation#attachment 中
             invocation.setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
         }
+
+        //生成请求id
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
 
 
         try {
-            //改方法是模板方法，所以实际调用的是DubboInvoker
+            //改方法是模板方法，如果是远程调用，所以实际调用的是DubboInvoker，如果是本地调用实际调用的是InjvmInvoker
             return doInvoke(invocation);
         } catch (InvocationTargetException e) { // biz exception
             Throwable te = e.getTargetException();

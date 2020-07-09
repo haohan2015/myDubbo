@@ -35,10 +35,13 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
      */
     private final T proxy;
 
+    /**
+     * 接口类型，一般是 Service 接口
+     */
     private final Class<T> type;
 
     /**
-     * 对于需要注册中心服务提供者来说，此处的url是RegistryURL，
+     * 对于需要注册中心的服务提供者来说，此处的url是RegistryURL，
      * 如果是不需要注册中心只需要暴露服务，那么此处的url就是服务提供者的Url
      */
     private final URL url;
@@ -80,7 +83,10 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
         try {
-            // 调用 doInvoke 执行后续的调用，并将调用结果封装到 RpcResult 中，并
+            // 调用 doInvoke 执行后续的调用，并将调用结果封装到 RpcResult 中，此处父类并没有实现doInvoke方法，调用的是子类方法
+            // 具体的子实现类有两个，但是都是匿名实现类，一个是在JdkProxyFactory，一个是在JavassistProxyFactory
+            //其中JdkProxyFactory的实现类的逻辑是通过反射来调用真实bean的方法
+            //而JavassistProxyFactory是通过提前生成的wrapper类来调用服务的具体方法，貌似这样效率更高
             return new RpcResult(doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments()));
         } catch (InvocationTargetException e) {
             return new RpcResult(e.getTargetException());
@@ -89,6 +95,16 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
         }
     }
 
+    /**
+     * 执行调用
+     *
+     * @param proxy 代理的对象
+     * @param methodName 方法名
+     * @param parameterTypes 方法参数类型数组
+     * @param arguments 方法参数数组
+     * @return 调用结果
+     * @throws Throwable 发生异常
+     */
     protected abstract Object doInvoke(T proxy, String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Throwable;
 
     @Override

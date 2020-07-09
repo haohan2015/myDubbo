@@ -93,7 +93,7 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        //此处的invoker是包装AbstractProxyInvoker的匿名实现类的过滤器invoker
+        //此处的invoker是包装DelegateProviderMetaDataInvoker的匿名实现类的过滤器invoker
         // 创建 InjvmExporter
         return new InjvmExporter<T>(invoker, invoker.getUrl().getServiceKey(), exporterMap);
     }

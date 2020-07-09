@@ -447,7 +447,7 @@ public class RegistryProtocol implements Protocol {
 
         // 一个注册中心可能有多个服务提供者，因此这里需要将多个服务提供者合并为一个
         //对于有多个注册中心，或者有多个提供者，那么通过集群的方式合并
-        //最后实际调用的是MockClusterWrapper，最后返回的是MockClusterInvoker
+        //此处的cluster是一个自适应的，真实调用的是MockClusterWrapper，此处的invoker的真实类型是MockClusterInvoker
         Invoker invoker = cluster.join(directory);
 
         // 向本地注册表，注册消费者

@@ -459,7 +459,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             /**
              * 此处的refprotocol的真实类型是protocol$Adaptive，自适应也不是直接调用inJvmProtocol，而是首先调用的是ProtocolListenerWrapper
              * ，然后又调用ProtocolFilterWrapper，然后才是真实的调用inJvmProtocol，生成InjvmInvoker，返回到ProtocolFilterWrapper封装引用过滤器，
-             * 返回到ProtocolListenerWrapper会通知该服务的引用通知，然后封装为ListenerInvokerWrapper返回，所以此处的Invoker的真实类型是ListenerInvokerWrapper
+             * 返回到ProtocolListenerWrapper会通知该服务的引用通知，然后封装为ListenerInvokerWrapper返回，所以此处的Invoker的真实类型是过滤器链条
              */
             invoker = refprotocol.refer(interfaceClass, url);
             if (logger.isInfoEnabled()) {
@@ -514,7 +514,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             if (urls.size() == 1) {
                 /**
                  * 此处的refprotocol类型为Protocol$Adaptive，会根据url中的Protocol来加载具体的实现，但是实际也并不是直接调用的真实实现类，而是首先调用的是ProtocolFilterWrapper
-                 * 对于有注册中心的服务，第一步什么也不做，会紧接着调用ProtocolListenerWrapper，同样对于有注册中心的服务，这一步什么也不做，然后调用RegistryProtocol
+                 * 对于有注册中心的服务，第一步什么也不做，会紧接着调用ProtocolListenerWrapper，同样对于有注册中心的服务，这一步什么也不做，然后调用RegistryProtocol，此处返回的是MockClusterInvoker
                  */
                 invoker = refprotocol.refer(interfaceClass, urls.get(0));
             } else {
@@ -560,6 +560,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         // create service proxy
         // 生成代理类，此处的invoker类型为MockClusterInvoker
         //此处proxyFactory的实际类型是proxyFactory$Adaptive调用的是StubProxyFactoryWrapper的getProxy
+        //dubbo是通过Wrapper来实现了AOP的功能的，思想就是，在加载实现类的时候会把提前定义好的wrapper加载到内存当中
+        //并做单独存储，是怎么区分哪些类是包装类呢？是通过判断该类是否有所实现接口类型的构造方法，如果有就人为这是一个包装类。
+        //这样在通过自适应真实的区获取实现类的时候，首先创建真实的实现类，然后完成IOC的工作，然后判断一下该类有没有包装类
+        //如果有，那么基于真实实现类的实例来构建包装类，然后返回，这样给业务方返回的就是一个实现了AOP功能的具体实现类的实例
         return (T) proxyFactory.getProxy(invoker);
     }
 

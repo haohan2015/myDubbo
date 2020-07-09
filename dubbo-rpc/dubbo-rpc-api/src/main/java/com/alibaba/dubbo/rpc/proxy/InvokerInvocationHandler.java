@@ -24,9 +24,13 @@ import java.lang.reflect.Method;
 
 /**
  * InvokerHandler
+ * 通过 InvokerInvocationHandler ，可以实现 Proxy 和真正的逻辑解耦，该类中把具体的调用信息封装成了Invocation
  */
 public class InvokerInvocationHandler implements InvocationHandler {
 
+    /**
+     * Invoker 对象
+     */
     private final Invoker<?> invoker;
 
     public InvokerInvocationHandler(Invoker<?> handler) {

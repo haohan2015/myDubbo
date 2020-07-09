@@ -741,7 +741,7 @@ public class ExtensionLoader<T> {
                     type + ", class line: " + clazz.getName() + "), class "
                     + clazz.getName() + "is not subtype of interface.");
         }
-        //缓存自适应拓展对象类`cachedAdaptiveClass`，目前嘞上面加油@Adaptive注解的只有AdaptiveExtensionFactory，说明这是一个手动编写的自适应类
+        //缓存自适应拓展对象类`cachedAdaptiveClass`，目前类上面加了@Adaptive注解的只有AdaptiveExtensionFactory，AdaptiveCompiler，说明这是一个手动编写的自适应类
         if (clazz.isAnnotationPresent(Adaptive.class)) {
             if (cachedAdaptiveClass == null) {
                 cachedAdaptiveClass = clazz;

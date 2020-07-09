@@ -23,6 +23,7 @@ import com.alibaba.dubbo.common.extension.ExtensionLoader;
 
 /**
  * AdaptiveCompiler. (SPI, Singleton, ThreadSafe)
+ * 该类是Compiler自适应，其他的自适应代码都是通过该类来编译的
  */
 @Adaptive
 public class AdaptiveCompiler implements Compiler {

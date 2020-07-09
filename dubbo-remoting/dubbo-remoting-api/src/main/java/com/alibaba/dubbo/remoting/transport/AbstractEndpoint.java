@@ -59,6 +59,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
     }
 
     protected static Codec2 getChannelCodec(URL url) {
+        //该属性是在DubboProtocol的createServer和initClient分别设置的
         String codecName = url.getParameter(Constants.CODEC_KEY, "telnet");
         if (ExtensionLoader.getExtensionLoader(Codec2.class).hasExtension(codecName)) {
             // 例如，在 DubboProtocol 中，会获得 DubboCodec

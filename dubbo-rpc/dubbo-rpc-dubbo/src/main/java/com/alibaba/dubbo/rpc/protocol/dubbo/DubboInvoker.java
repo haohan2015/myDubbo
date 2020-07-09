@@ -87,6 +87,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());
         inv.setAttachment(Constants.VERSION_KEY, version);
 
+        //这一步并不是做负载均衡，而且有些消费者，针对单个提供者需要创建多个连接
         ExchangeClient currentClient;
         if (clients.length == 1) {
             // 从 clients 数组中获取 ExchangeClient

@@ -31,33 +31,48 @@ import java.io.IOException;
 
 public final class DubboCountCodec implements Codec2 {
 
+    /**
+     * 编解码器
+     */
     private DubboCodec codec = new DubboCodec();
 
     @Override
     public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
         //此处的channle类型是NettyChannel
+        //此处的codec的真实类型是DubboCodec
         codec.encode(channel, buffer, msg);
     }
 
     @Override
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
+        // 记录当前读位置
         int save = buffer.readerIndex();
+        // 创建 MultiMessage 对象
         MultiMessage result = MultiMessage.create();
         do {
+            // 解码
             //此处的codec的真实类型是DubboCodec，但是因为没有覆盖父类的方法，所以此处调用的是父类ExchangeCodec的方法
             Object obj = codec.decode(channel, buffer);
+
+            // 输入不够，重置读进度
             if (Codec2.DecodeResult.NEED_MORE_INPUT == obj) {
                 buffer.readerIndex(save);
                 break;
+            // 解析到消息
             } else {
+                // 添加结果消息
                 result.addMessage(obj);
+                // 记录消息长度到隐式参数集合，用于 MonitorFilter 监控
                 logMessageLength(obj, buffer.readerIndex() - save);
+                // 记录当前读位置
                 save = buffer.readerIndex();
             }
         } while (true);
+        // 需要更多的输入
         if (result.isEmpty()) {
             return Codec2.DecodeResult.NEED_MORE_INPUT;
         }
+        // 返回解析到的消息
         if (result.size() == 1) {
             return result.get(0);
         }

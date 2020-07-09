@@ -62,8 +62,11 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public <T> T getProxy(Invoker<T> invoker) throws RpcException {
-        //此处调用的是AbstractProxyFactory的getProxy
+        //对于服务消费者，此处的invoker类型为MockClusterInvoker
+        //此处的proxyFactory的真实类型是JavassistProxyFactory，但是因为没有覆盖父类的该方法，
+        // 所以实际上调用的是父类AbstractProxyFactory
         T proxy = proxyFactory.getProxy(invoker);
+        //对于有本地存根的，那么基于当前代理对象生成本地存根对象返回
         if (GenericService.class != invoker.getInterface()) {
             String stub = invoker.getUrl().getParameter(Constants.STUB_KEY, invoker.getUrl().getParameter(Constants.LOCAL_KEY));
             if (ConfigUtils.isNotEmpty(stub)) {
@@ -85,6 +88,7 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
                         proxy = (T) constructor.newInstance(new Object[]{proxy});
                         //export stub service
                         URL url = invoker.getUrl();
+                        //TODO 不明白
                         if (url.getParameter(Constants.STUB_EVENT_KEY, Constants.DEFAULT_STUB_EVENT)) {
                             url = url.addParameter(Constants.STUB_EVENT_METHODS_KEY, StringUtils.join(Wrapper.getWrapper(proxy.getClass()).getDeclaredMethodNames(), ","));
                             url = url.addParameter(Constants.IS_SERVER_KEY, Boolean.FALSE.toString());
