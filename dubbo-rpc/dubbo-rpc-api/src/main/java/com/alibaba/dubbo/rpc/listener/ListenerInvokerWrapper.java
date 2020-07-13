@@ -35,7 +35,7 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
     private static final Logger logger = LoggerFactory.getLogger(ListenerInvokerWrapper.class);
 
     /**
-     * 真实的 Invoker 对象，对于本地引用的话就是InjvmInvoker，远程引用的话就是类似FailoverClusterInvoker
+     * 真实的 Invoker 对象，对于本地引用的话就是InjvmInvoker，远程引用的话就是类似DubboInvoker
      */
     private final Invoker<T> invoker;
 
@@ -80,6 +80,8 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
+        //服务提供者，此处的invoker是具体的InjvmInvoker或者是DubboInvoker，但是实际上这两个类都没有实现该方法，
+        // 所以实际上调用的是父类AbstractInvoker
         return invoker.invoke(invocation);
     }
 

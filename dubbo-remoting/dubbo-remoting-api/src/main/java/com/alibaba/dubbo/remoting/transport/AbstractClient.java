@@ -330,7 +330,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         if (channel == null || !channel.isConnected()) {
             throw new RemotingException(this, "message can not send, because channel is closed . url:" + getUrl());
         }
-        // 继续向下调用
+        // 继续向下调用，此处的channel的真实类型是NettyChannel
         channel.send(message, sent);
     }
 

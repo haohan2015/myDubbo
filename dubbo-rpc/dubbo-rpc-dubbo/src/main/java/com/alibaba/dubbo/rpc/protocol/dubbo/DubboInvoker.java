@@ -82,8 +82,9 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     @Override
     protected Result doInvoke(final Invocation invocation) throws Throwable {
         RpcInvocation inv = (RpcInvocation) invocation;
+        // 获得方法名
         final String methodName = RpcUtils.getMethodName(invocation);
-        // 设置 path 和 version 到 attachment 中
+        // 设置 path( 服务名 ) 和 version 到 attachment 中
         inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());
         inv.setAttachment(Constants.VERSION_KEY, version);
 
@@ -113,7 +114,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 return new RpcResult();
             } else if (isAsync) {
                 //异步需要返回值
-                // 发送请求，并得到一个 ResponseFuture 实例
+                // 发送请求，并得到一个 ResponseFuture 实例，真实类型是DefaultFuture
                 ResponseFuture future = currentClient.request(inv, timeout);
                 // 设置 future 到上下文中
                 RpcContext.getContext().setFuture(new FutureAdapter<Object>(future));

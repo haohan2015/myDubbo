@@ -30,4 +30,9 @@ public class DemoServiceImpl implements DemoService {
         return "Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress();
     }
 
+    @Override
+    public String sayHello(String name, Integer age) {
+        System.out.println("[" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "] Hello " + name + " age=" + age + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
+        return "Hello " + name + " age" + age +", response from provider: " + RpcContext.getContext().getLocalAddress();
+    }
 }

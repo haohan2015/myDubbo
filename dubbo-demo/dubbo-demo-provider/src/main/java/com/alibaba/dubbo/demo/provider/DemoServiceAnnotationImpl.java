@@ -15,4 +15,9 @@ public class DemoServiceAnnotationImpl implements DemoService {
     public String sayHello(String name) {
         return "annotation: hello " + name;
     }
+
+    @Override
+    public String sayHello(String name, Integer age) {
+        return "annotation: hello " + name + " age:" + age;
+    }
 }

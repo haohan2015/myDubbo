@@ -38,4 +38,6 @@
         <dubbo:method name="sayHello" onreturn="notify.onreturn" onthrow="notify.onthrow"/>
     </dubbo:reference>
 
+    <dubbo:reference id="helloService" interface="com.alibaba.dubbo.demo.HelloService"/>
+
 </beans>

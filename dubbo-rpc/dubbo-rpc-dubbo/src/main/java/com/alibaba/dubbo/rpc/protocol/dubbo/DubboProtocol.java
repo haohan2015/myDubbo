@@ -93,8 +93,9 @@ public class DubboProtocol extends AbstractProtocol {
         public Object reply(ExchangeChannel channel, Object message) throws RemotingException {
             if (message instanceof Invocation) {
                 Invocation inv = (Invocation) message;
-                //对于服务提供者 此处的invoker的真实类型是ProtocolFilterWrapper
+                //对于服务提供者 此处的invoker的真实类型是ProtocolFilterWrapper生成的过滤器链条
                 Invoker<?> invoker = getInvoker(channel, inv);
+                // 如果是callback 需要处理高版本调用低版本的问题
                 // need to consider backward-compatibility if it's a callback
                 if (Boolean.TRUE.toString().equals(inv.getAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
                     // 回调相关
@@ -119,6 +120,7 @@ public class DubboProtocol extends AbstractProtocol {
                         return null;
                     }
                 }
+                // 设置调用方的地址
                 RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
                 // 通过 Invoker 调用具体的服务，对于服务提供者来说，此处的invoker的真实类型是ProtocolFilterWrapper，接下来会走一系列的过滤器
                 return invoker.invoke(inv);
@@ -138,6 +140,10 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
 
+        /**
+         * 在服务提供者上，有 "onconnect" 和 "ondisconnect" 配置项，在服务提供者连接或断开连接时，调用 Service 对应的方法。
+         * 目前这个配置项，在 Dubbo 文档里，暂未提及。当然，这个在实际场景下，基本没用过。
+         */
         @Override
         public void connected(Channel channel) throws RemotingException {
             //对于服务提供者来说 此处的channel的真实类型是HeaderExchangeChannel
@@ -224,6 +230,7 @@ public class DubboProtocol extends AbstractProtocol {
         if (isStubServiceInvoke) {
             port = channel.getRemoteAddress().getPort();
         }
+        // 如果是参数回调，获得真正的服务名 `path` 。
         //callback
         isCallBackServiceInvoke = isClientSide(channel) && !isStubServiceInvoke;
         if (isCallBackServiceInvoke) {

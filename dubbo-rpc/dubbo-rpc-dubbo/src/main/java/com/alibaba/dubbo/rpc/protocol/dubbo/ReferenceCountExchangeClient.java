@@ -127,6 +127,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     @Override
     public void send(Object message) throws RemotingException {
+        //此处的client的真实类型是HeaderExchangeClient
         client.send(message);
     }
 

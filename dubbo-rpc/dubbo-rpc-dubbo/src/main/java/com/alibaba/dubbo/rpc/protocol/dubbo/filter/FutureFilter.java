@@ -38,6 +38,7 @@ import java.util.concurrent.Future;
 
 /**
  * EventFilter
+ * 事件通知过滤器，只有服务消费者
  */
 @Activate(group = Constants.CONSUMER)
 public class FutureFilter implements Filter {
@@ -46,15 +47,22 @@ public class FutureFilter implements Filter {
 
     @Override
     public Result invoke(final Invoker<?> invoker, final Invocation invocation) throws RpcException {
+        // 获得是否异步调用
         final boolean isAsync = RpcUtils.isAsync(invoker.getUrl(), invocation);
 
+        // 触发前置方法
         fireInvokeCallback(invoker, invocation);
         // need to configure if there's return value before the invocation in order to help invoker to judge if it's
         // necessary to return future.
+        // 调用方法
         Result result = invoker.invoke(invocation);
+
+        // 触发回调方法
         if (isAsync) {
+            // 异步回调
             asyncCallback(invoker, invocation);
         } else {
+            // 同步回调
             syncCallback(invoker, invocation, result);
         }
         return result;
@@ -101,6 +109,7 @@ public class FutureFilter implements Filter {
     }
 
     private void fireInvokeCallback(final Invoker<?> invoker, final Invocation invocation) {
+        // 获得前置方法和对象，是在ReferenceConfig.init()方法的426行也就是StaticContext.getSystemContext().putAll(attributes)放入的
         final Method onInvokeMethod = (Method) StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_INVOKE_METHOD_KEY));
         final Object onInvokeInst = StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_INVOKE_INSTANCE_KEY));
 
@@ -125,6 +134,7 @@ public class FutureFilter implements Filter {
     }
 
     private void fireReturnCallback(final Invoker<?> invoker, final Invocation invocation, final Object result) {
+        // 获得调用返回的后执行逻辑的方法和对象，是在ReferenceConfig.init()方法的426行也就是StaticContext.getSystemContext().putAll(attributes)放入的
         final Method onReturnMethod = (Method) StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_RETURN_METHOD_KEY));
         final Object onReturnInst = StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_RETURN_INSTANCE_KEY));
 
@@ -166,6 +176,7 @@ public class FutureFilter implements Filter {
     }
 
     private void fireThrowCallback(final Invoker<?> invoker, final Invocation invocation, final Throwable exception) {
+        // 获得跑出异常处理的方法法和对象，是在ReferenceConfig.init()方法的426行也就是StaticContext.getSystemContext().putAll(attributes)放入的
         final Method onthrowMethod = (Method) StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_THROW_METHOD_KEY));
         final Object onthrowInst = StaticContext.getSystemContext().get(StaticContext.getKey(invoker.getUrl(), invocation.getMethodName(), Constants.ON_THROW_INSTANCE_KEY));
 
