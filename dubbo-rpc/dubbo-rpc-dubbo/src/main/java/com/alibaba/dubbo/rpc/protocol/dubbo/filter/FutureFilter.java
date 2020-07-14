@@ -70,17 +70,26 @@ public class FutureFilter implements Filter {
 
     private void syncCallback(final Invoker<?> invoker, final Invocation invocation, final Result result) {
         if (result.hasException()) {
+            // 异常，触发异常回调
             fireThrowCallback(invoker, invocation, result.getException());
         } else {
+            // 正常，触发正常回调
             fireReturnCallback(invoker, invocation, result.getValue());
         }
     }
 
     private void asyncCallback(final Invoker<?> invoker, final Invocation invocation) {
+        // 获得 Future 对象
         Future<?> f = RpcContext.getContext().getFuture();
         if (f instanceof FutureAdapter) {
             ResponseFuture future = ((FutureAdapter<?>) f).getFuture();
+            // 设置回调
             future.setCallback(new ResponseCallback() {
+
+                /**
+                 * 触发正常回调方法
+                 * @param rpcResult
+                 */
                 @Override
                 public void done(Object rpcResult) {
                     if (rpcResult == null) {
@@ -94,8 +103,10 @@ public class FutureFilter implements Filter {
                     }
                     Result result = (Result) rpcResult;
                     if (result.hasException()) {
+                        // 触发异常回调方法
                         fireThrowCallback(invoker, invocation, result.getException());
                     } else {
+                        // 触发正常回调方法
                         fireReturnCallback(invoker, invocation, result.getValue());
                     }
                 }
