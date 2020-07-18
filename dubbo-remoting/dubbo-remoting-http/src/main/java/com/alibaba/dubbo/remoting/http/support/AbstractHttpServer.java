@@ -34,6 +34,7 @@ public abstract class AbstractHttpServer implements HttpServer {
     private volatile boolean closed;
 
     public AbstractHttpServer(URL url, HttpHandler handler) {
+        //对于服务提供者，此处的url是服务提供者url,此处的handler的真实类型是RestHandler
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }

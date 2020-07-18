@@ -32,6 +32,7 @@ public class RestServerFactory {
     }
 
     public RestServer createServer(String name) {
+        //对于服务提供者 此处的httpBinfer的真实类型是HttpBinder$Adaptive
         // TODO move names to Constants
         if ("servlet".equalsIgnoreCase(name) || "jetty".equalsIgnoreCase(name) || "tomcat".equalsIgnoreCase(name)) {
             return new DubboHttpServer(httpBinder);

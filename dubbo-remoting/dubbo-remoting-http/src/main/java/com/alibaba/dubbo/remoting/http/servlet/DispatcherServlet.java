@@ -32,6 +32,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DispatcherServlet extends HttpServlet {
 
     private static final long serialVersionUID = 5766349180380479888L;
+
+    /**
+     * 存储了服务暴露端口到RestHandler关系
+     */
     private static final Map<Integer, HttpHandler> handlers = new ConcurrentHashMap<Integer, HttpHandler>();
     private static DispatcherServlet INSTANCE;
 
@@ -40,6 +44,7 @@ public class DispatcherServlet extends HttpServlet {
     }
 
     public static void addHttpHandler(int port, HttpHandler processor) {
+        //对于服务提供者，此处的port默认是8080,此处的handler的真实类型是RestHandler
         handlers.put(port, processor);
     }
 

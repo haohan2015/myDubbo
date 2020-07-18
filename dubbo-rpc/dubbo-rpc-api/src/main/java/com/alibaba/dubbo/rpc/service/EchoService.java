@@ -18,6 +18,7 @@ package com.alibaba.dubbo.rpc.service;
 
 /**
  * Echo service.
+ * 所有服务自动实现 EchoService 接口，只需将任意服务引用强制转型为 EchoService，即可使用。
  * @export
  */
 public interface EchoService {

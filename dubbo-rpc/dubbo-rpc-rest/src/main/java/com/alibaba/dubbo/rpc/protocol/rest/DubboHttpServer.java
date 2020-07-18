@@ -40,19 +40,26 @@ public class DubboHttpServer extends BaseRestServer {
 
     private final HttpServletDispatcher dispatcher = new HttpServletDispatcher();
     private final ResteasyDeployment deployment = new ResteasyDeployment();
+    /**
+     * 此处的httpBinfer的真实类型是HttpBinder$Adaptive
+     */
     private HttpBinder httpBinder;
     private HttpServer httpServer;
 //    private boolean isExternalServer;
 
     public DubboHttpServer(HttpBinder httpBinder) {
+        //对于服务提供者 此处的httpBinfer的真实类型是HttpBinder$Adaptive
         this.httpBinder = httpBinder;
     }
 
     @Override
     protected void doStart(URL url) {
         // TODO jetty will by default enable keepAlive so the xml config has no effect now
+        //对于服务提供者，此处httpServer的默认类型是JettyHttpServer
+        // 创建 HttpServer 对象，使用 RestHandler 作为处理器。
         httpServer = httpBinder.bind(url, new RestHandler());
 
+        // 获得 ServletContext 对象
         ServletContext servletContext = ServletManager.getInstance().getServletContext(url.getPort());
         if (servletContext == null) {
             servletContext = ServletManager.getInstance().getServletContext(ServletManager.EXTERNAL_SERVER_PORT);
@@ -62,8 +69,10 @@ public class DubboHttpServer extends BaseRestServer {
                     "make sure that you've configured " + BootstrapListener.class.getName() + " in web.xml");
         }
 
+        // 设置 ResteasyDeployment
         servletContext.setAttribute(ResteasyDeployment.class.getName(), deployment);
 
+        // 初始化 Resteasy HttpServletDispatcher
         try {
             dispatcher.init(new SimpleServletConfig(servletContext));
         } catch (ServletException e) {

@@ -100,19 +100,20 @@ public class RestProtocol extends AbstractProxyProtocol {
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         //此处的impl是提供服务的包装代理类
-        // 获得服务器地址
+        // 获得服务器地址 ip:port
         String addr = getAddr(url);
         // 获得服务的真实类名，例如 DemoServiceImpl,在 ServiceConfig 初始化时
         Class implClass = ServiceClassHolder.getInstance().popServiceClass();
         // 获得 RestServer 对象。若不存在，进行创建。
         RestServer server = servers.get(addr);
         if (server == null) {
+            //此处server的真实类型是DubboHttpServer
             server = serverFactory.createServer(url.getParameter(Constants.SERVER_KEY, "jetty"));
             server.start(url);// 启动
             servers.put(addr, server);
         }
 
-        // 获得 ContextPath 路径。
+        // 获得 ContextPath 路径 默认为空
         String contextPath = getContextPath(url);
         // 外部的容器，需要从 ServletContext 中获得
         if ("servlet".equalsIgnoreCase(url.getParameter(Constants.SERVER_KEY, "jetty"))) {
@@ -169,7 +170,9 @@ public class RestProtocol extends AbstractProxyProtocol {
         // TODO more configs to add
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         // 20 is the default maxTotal of current PoolingClientConnectionManager
+        // 最大请求数
         connectionManager.setMaxTotal(url.getParameter(Constants.CONNECTIONS_KEY, 20));
+        // 每个路由，最大请求数
         connectionManager.setDefaultMaxPerRoute(url.getParameter(Constants.CONNECTIONS_KEY, 20));
 
         // 添加到 ConnectionMonitor 中。

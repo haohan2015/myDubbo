@@ -44,6 +44,7 @@ public class JettyHttpServer extends AbstractHttpServer {
     private URL url;
 
     public JettyHttpServer(URL url, final HttpHandler handler) {
+        //对于服务提供者，此处的url是服务提供者url,此处的handler的真实类型是RestHandler
         super(url, handler);
         this.url = url;
         // TODO we should leave this setting to slf4j

@@ -31,6 +31,9 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * 实现 ContainerRequestFilter 和 ClientRequestFilter 接口，处理 RpcContext 的 Filter 实现类。
+ */
 @Priority(Integer.MIN_VALUE + 1)
 public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFilter {
 
@@ -39,6 +42,11 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
     // currently we use a single header to hold the attachments so that the total attachment size limit is about 8k
     private static final int MAX_HEADER_SIZE = 8 * 1024;
 
+    /**
+     * 解析 Http Header 的 Dubbo-Attachments ，设置到 RpcContext Attachment 中。
+     * @param requestContext
+     * @throws IOException
+     */
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         HttpServletRequest request = ResteasyProviderFactory.getContextData(HttpServletRequest.class);
@@ -66,6 +74,11 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
         }
     }
 
+    /**
+     * 通过将 Dubbo RpcContext Attachment ，设置到 Http Header 的 Dubbo-Attachments 中，请求传递给 Server 。
+     * @param requestContext
+     * @throws IOException
+     */
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
         int size = 0;

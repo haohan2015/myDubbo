@@ -45,7 +45,7 @@ import java.util.Map;
 
 /**
  * This logging filter is not highly optimized for now
- *
+ *实现 ContainerRequestFilter 和 ClientRequestFilter 等等接口，打印日志的 Filter 。目前仅打印请求和响应的 Header 。
  */
 @Priority(Integer.MIN_VALUE)
 public class LoggingFilter implements ContainerRequestFilter, ClientRequestFilter, ContainerResponseFilter, ClientResponseFilter, WriterInterceptor, ReaderInterceptor {

@@ -28,6 +28,7 @@ public class JettyHttpBinder implements HttpBinder {
 
     @Override
     public HttpServer bind(URL url, HttpHandler handler) {
+        //对于服务提供者，此处的handler的真实类型是RestHandler
         return new JettyHttpServer(url, handler);
     }
 
