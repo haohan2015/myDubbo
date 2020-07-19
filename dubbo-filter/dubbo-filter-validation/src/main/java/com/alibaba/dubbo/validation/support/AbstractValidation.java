@@ -32,8 +32,10 @@ public abstract class AbstractValidation implements Validation {
 
     @Override
     public Validator getValidator(URL url) {
+        // 获得 Validator 对象
         String key = url.toFullString();
         Validator validator = validators.get(key);
+        // 不存在，创建 Validator 对象，并缓存
         if (validator == null) {
             validators.put(key, createValidator(url));
             validator = validators.get(key);
@@ -41,6 +43,12 @@ public abstract class AbstractValidation implements Validation {
         return validator;
     }
 
+    /**
+     * 创建 Validator 对象
+     *
+     * @param url URL
+     * @return Validator 对象
+     */
     protected abstract Validator createValidator(URL url);
 
 }
