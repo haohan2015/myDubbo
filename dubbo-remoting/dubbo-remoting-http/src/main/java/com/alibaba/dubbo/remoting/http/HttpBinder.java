@@ -23,6 +23,7 @@ import com.alibaba.dubbo.common.extension.SPI;
 
 /**
  * HttpBinder
+ * HTTP 绑定器接口
  */
 @SPI("jetty")
 public interface HttpBinder {

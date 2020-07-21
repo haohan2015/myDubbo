@@ -27,14 +27,23 @@ import java.net.InetSocketAddress;
  */
 public abstract class AbstractHttpServer implements HttpServer {
 
+    /**
+     * URL 对象
+     */
     private final URL url;
 
+    /**
+     * 处理器
+     */
     private final HttpHandler handler;
 
+    /**
+     * 是否关闭
+     */
     private volatile boolean closed;
 
     public AbstractHttpServer(URL url, HttpHandler handler) {
-        //对于服务提供者，此处的url是服务提供者url,此处的handler的真实类型是RestHandler
+        //对于服务提供者，此处的url是服务提供者url,如果当前用的是rest协议的话，此处的handler的真实类型是RestHandler
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }

@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Service dispatcher Servlet.
+ * 服务请求调度 Servlet
  */
 public class DispatcherServlet extends HttpServlet {
 
@@ -37,6 +38,10 @@ public class DispatcherServlet extends HttpServlet {
      * 存储了服务暴露端口到RestHandler关系
      */
     private static final Map<Integer, HttpHandler> handlers = new ConcurrentHashMap<Integer, HttpHandler>();
+
+    /**
+     * 保持单例
+     */
     private static DispatcherServlet INSTANCE;
 
     public DispatcherServlet() {
@@ -44,7 +49,7 @@ public class DispatcherServlet extends HttpServlet {
     }
 
     public static void addHttpHandler(int port, HttpHandler processor) {
-        //对于服务提供者，此处的port默认是8080,此处的handler的真实类型是RestHandler
+        //对于服务提供者，此处的port默认是8080,如果用的是rest协议，此处的handler的真实类型是RestHandler
         handlers.put(port, processor);
     }
 
@@ -59,10 +64,13 @@ public class DispatcherServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // 获得处理器
         HttpHandler handler = handlers.get(request.getLocalPort());
+        // 处理器不存在，报错
         if (handler == null) {// service not found.
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Service not found.");
         } else {
+            // 处理请求
             handler.handle(request, response);
         }
     }

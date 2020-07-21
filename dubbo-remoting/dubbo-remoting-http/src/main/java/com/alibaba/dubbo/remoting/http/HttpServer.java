@@ -25,14 +25,14 @@ public interface HttpServer extends Resetable {
 
     /**
      * get http handler.
-     *
+     * 处理器
      * @return http handler.
      */
     HttpHandler getHttpHandler();
 
     /**
      * get url.
-     *
+     * 【属性相关】
      * @return url
      */
     URL getUrl();
@@ -63,7 +63,7 @@ public interface HttpServer extends Resetable {
 
     /**
      * is closed.
-     *
+     * 【状态相关】
      * @return closed
      */
     boolean isClosed();
