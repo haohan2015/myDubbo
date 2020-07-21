@@ -1,5 +1,7 @@
 package com.alibaba.dubbo.demo;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * @author admin
  * @Description: TODO
@@ -9,4 +11,5 @@ public interface HelloService {
 
     String sayHello(String name);
 
+    void add(@NotNull User user);
 }

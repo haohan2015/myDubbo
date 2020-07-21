@@ -33,6 +33,10 @@ public abstract class AbstractValidation implements Validation {
     @Override
     public Validator getValidator(URL url) {
         // 获得 Validator 对象
+        //对于服务提供者 此处的key类似dubbo://172.16.10.53:20880/com.alibaba.dubbo.demo.HelloService?anyhost=true
+        // &application=demo-provider&bind.ip=172.16.10.53&bind.port=20880&dubbo=2.0.2&generic=false
+        // &interface=com.alibaba.dubbo.demo.HelloService&methods=add,sayHello&pid=96704&qos.port=22222
+        // &side=provider&timestamp=1595232743424&validation=true
         String key = url.toFullString();
         Validator validator = validators.get(key);
         // 不存在，创建 Validator 对象，并缓存

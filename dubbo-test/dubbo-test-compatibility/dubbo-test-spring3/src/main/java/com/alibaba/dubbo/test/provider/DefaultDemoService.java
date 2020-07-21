@@ -37,4 +37,8 @@ public class DefaultDemoService implements DemoService {
         return "DefaultDemoService - sayHell() : " + name;
     }
 
+    @Override
+    public String sayHello(String name, Integer age) {
+        return null;
+    }
 }
