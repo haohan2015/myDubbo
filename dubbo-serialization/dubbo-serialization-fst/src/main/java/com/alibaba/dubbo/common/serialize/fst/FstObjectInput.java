@@ -24,7 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 
-
+/**
+ * 实现 ObjectInput 接口，FST 对象输入实现类。
+ */
 public class FstObjectInput implements ObjectInput {
 
     private FSTObjectInput input;
@@ -71,10 +73,13 @@ public class FstObjectInput implements ObjectInput {
     @Override
     public byte[] readBytes() throws IOException {
         int len = input.readInt();
+        // 数组为空
         if (len < 0) {
             return null;
+        // 数组为零
         } else if (len == 0) {
             return new byte[]{};
+         // 数组 > 0
         } else {
             byte[] b = new byte[len];
             input.readFully(b);

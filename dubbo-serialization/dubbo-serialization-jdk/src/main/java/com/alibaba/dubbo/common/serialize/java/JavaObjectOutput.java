@@ -38,9 +38,12 @@ public class JavaObjectOutput extends NativeJavaObjectOutput {
     @Override
     public void writeUTF(String v) throws IOException {
         if (v == null) {
+            // 空字符串
             getObjectOutputStream().writeInt(-1);
         } else {
+            // 长度
             getObjectOutputStream().writeInt(v.length());
+            // 字符串
             getObjectOutputStream().writeUTF(v);
         }
     }

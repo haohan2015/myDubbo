@@ -207,7 +207,6 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 //其中toCategoriesPath通过解析URL的category属性，来获得当前要监听的路径
                 //如果是提供者，那么toCategoriesPath解析的结果是长度为0的数组，元素等于
                 for (String path : toCategoriesPath(url)) {
-                    //如果是配置path类似/dubbo/com.alibaba.dubbo.demo.DemoService/configurators
                     //如果是消费者path类似/dubbo/com.alibaba.dubbo.demo.DemoService/providers
                     // ,/dubbo/com.alibaba.dubbo.demo.DemoService/configurators
                     // ,/dubbo/com.alibaba.dubbo.demo.DemoService/routers

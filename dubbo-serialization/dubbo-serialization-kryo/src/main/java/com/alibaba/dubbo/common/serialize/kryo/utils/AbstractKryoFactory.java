@@ -55,12 +55,29 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
+/**
+ * Kryo 工厂抽象类
+ * Kryo 支持对注册行为，如 kryo.register(SomeClazz.class); ，
+ * 这会赋予该 Class 一个从 0 开始的编号，但 Kryo 使用注册行为最大的问题在于，
+ * 其不保证同一个 Class 每一次注册的号码相同，这与注册的顺序有关，
+ * 也就意味着在不同的机器、同一个机器重启前后都有可能拥有不同的编号，
+ * 这会导致序列化产生问题，所以在分布式项目中，一般关闭注册行为。
+ */
 public abstract class AbstractKryoFactory implements KryoFactory {
 
+    /**
+     * 需要注册的类的集合
+     */
     private final Set<Class> registrations = new LinkedHashSet<Class>();
 
+    /**
+     * 是否开启注册行为
+     */
     private boolean registrationRequired;
 
+    /**
+     * Kryo 是否已经创建
+     */
     private volatile boolean kryoCreated;
 
     public AbstractKryoFactory() {
@@ -82,16 +99,19 @@ public abstract class AbstractKryoFactory implements KryoFactory {
 
     @Override
     public Kryo create() {
+        // 标记已创建
         if (!kryoCreated) {
             kryoCreated = true;
         }
 
+        // 创建 CompatibleKryo 对象
         Kryo kryo = new CompatibleKryo();
 
         // TODO
 //        kryo.setReferences(false);
         kryo.setRegistrationRequired(registrationRequired);
 
+        // 注册常用类
         kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
         kryo.register(GregorianCalendar.class, new GregorianCalendarSerializer());
         kryo.register(InvocationHandler.class, new JdkProxySerializer());
@@ -104,6 +124,7 @@ public abstract class AbstractKryoFactory implements KryoFactory {
         UnmodifiableCollectionsSerializer.registerSerializers(kryo);
         SynchronizedCollectionsSerializer.registerSerializers(kryo);
 
+        // 注册常用数据结构
         // now just added some very common classes
         // TODO optimization
         kryo.register(HashMap.class);
@@ -130,10 +151,12 @@ public abstract class AbstractKryoFactory implements KryoFactory {
         kryo.register(float[].class);
         kryo.register(double[].class);
 
+        // `registrations` 的注册
         for (Class clazz : registrations) {
             kryo.register(clazz);
         }
 
+        // SerializableClassRegistry 的注册
         for (Class clazz : SerializableClassRegistry.getRegisteredClasses()) {
             kryo.register(clazz);
         }
@@ -145,7 +168,17 @@ public abstract class AbstractKryoFactory implements KryoFactory {
         this.registrationRequired = registrationRequired;
     }
 
+    /**
+     * 返还 Kryo 对象
+     *
+     * @param kryo Kyro
+     */
     public abstract void returnKryo(Kryo kryo);
 
+    /**
+     * 获得 Kryo 对象
+     *
+     * @return Kryo 对象
+     */
     public abstract Kryo getKryo();
 }

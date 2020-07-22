@@ -26,7 +26,7 @@ import java.util.List;
 
 /**
  * AbstractLoadBalance
- *
+ * LoadBalance 抽象类，提供了权重计算的功能。
  */
 public abstract class AbstractLoadBalance implements LoadBalance {
 

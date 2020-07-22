@@ -72,6 +72,7 @@ public class RegistryProtocol implements Protocol {
     // 用于解决rmi重复暴露端口冲突的问题，已经暴露过的服务不再重新暴露
     //不同的服务提供者有不同的ExporterChangeableWrapper实例
     private final Map<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<String, ExporterChangeableWrapper<?>>();
+
     private Cluster cluster;
 
     /**
@@ -447,7 +448,8 @@ public class RegistryProtocol implements Protocol {
 
         // 一个注册中心可能有多个服务提供者，因此这里需要将多个服务提供者合并为一个
         //对于有多个注册中心，或者有多个提供者，那么通过集群的方式合并
-        //此处的cluster是一个自适应的，真实调用的是MockClusterWrapper，此处的invoker的真实类型是MockClusterInvoker
+        //正常情况此处的cluster是一个自适应的，真实调用的是MockClusterWrapper，此处的invoker的真实类型是MockClusterInvoker
+        //如果存在分组情况，此处的cluster的真实类型是MergeableCluster
         Invoker invoker = cluster.join(directory);
 
         // 向本地注册表，注册消费者

@@ -44,14 +44,30 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
-    private static final Logger logger = LoggerFactory
-            .getLogger(AbstractClusterInvoker.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractClusterInvoker.class);
+
+    /**
+     * Directory 对象
+     */
     protected final Directory<T> directory;
 
+    /**
+     * 集群时是否排除非可用( available )的 Invoker ，默认为 true
+     */
     protected final boolean availablecheck;
 
+    /**
+     * 是否已经销毁
+     */
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
+    /**
+     * 粘滞连接 Invoker
+     *
+     * http://dubbo.apache.org/zh-cn/docs/user/demos/stickiness.html
+     * 粘滞连接用于有状态服务，尽可能让客户端总是向同一提供者发起调用，除非该提供者挂了，再连另一台。
+     * 粘滞连接将自动开启延迟连接，以减少长连接数。
+     */
     private volatile Invoker<T> stickyInvoker = null;
 
     public AbstractClusterInvoker(Directory<T> directory) {
@@ -59,11 +75,13 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     }
 
     public AbstractClusterInvoker(Directory<T> directory, URL url) {
+        // 初始化 directory
         if (directory == null)
             throw new IllegalArgumentException("service directory == null");
 
         this.directory = directory;
         //sticky: invoker.isAvailable() should always be checked before using when availablecheck is true.
+        // 初始化 availablecheck
         this.availablecheck = url.getParameter(Constants.CLUSTER_AVAILABLE_CHECK_KEY, Constants.DEFAULT_CLUSTER_AVAILABLE_CHECK);
     }
 
@@ -79,10 +97,13 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     @Override
     public boolean isAvailable() {
+        // 如有粘滞连接 Invoker ，基于它判断。
+        // 指向，避免并发
         Invoker<T> invoker = stickyInvoker;
         if (invoker != null) {
             return invoker.isAvailable();
         }
+        // 基于 Directory 判断
         return directory.isAvailable();
     }
 
@@ -95,16 +116,16 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     /**
      * Select a invoker using loadbalance policy.</br>
-     * a)Firstly, select an invoker using loadbalance. If this invoker is in previously selected list, or, 
+     * a)Firstly, select an invoker using loadbalance. If this invoker is in previously selected list, or,
      * if this invoker is unavailable, then continue step b (reselect), otherwise return the first selected invoker</br>
      * b)Reslection, the validation rule for reselection: selected > available. This rule guarantees that
-     * the selected invoker has the minimum chance to be one in the previously selected list, and also 
+     * the selected invoker has the minimum chance to be one in the previously selected list, and also
      * guarantees this invoker is available.
-     *
-     * @param loadbalance load balance policy
-     * @param invocation
-     * @param invokers invoker candidates
-     * @param selected  exclude selected invokers or not
+     * 从候选的 Invoker 集合，选择一个最终调用的 Invoker 对象
+     * @param loadbalance load balance policy 对象，提供负责均衡策略
+     * @param invocation Invocation 对象
+     * @param invokers invoker candidates 候选的 Invoker 集合
+     * @param selected  exclude selected invokers or not 已选过的 Invoker 集合. 注意：输入保证不重复
      * @return
      * @throws RpcException
      */
@@ -116,6 +137,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
         // 获取 sticky 配置，sticky 表示粘滞连接。所谓粘滞连接是指让服务消费者尽可能的
         // 调用同一个服务提供者，除非该提供者挂了再进行切换
+        // 获得 sticky 配置项，方法级
         boolean sticky = invokers.get(0).getUrl().getMethodParameter(methodName, Constants.CLUSTER_STICKY_KEY, Constants.DEFAULT_CLUSTER_STICKY);
         {
             //ignore overloaded method
@@ -150,6 +172,8 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     private Invoker<T> doSelect(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, List<Invoker<T>> selected) throws RpcException {
         if (invokers == null || invokers.isEmpty())
             return null;
+
+        // 【第一种】如果只有一个 Invoker ，直接选择
         if (invokers.size() == 1)
             return invokers.get(0);
         if (loadbalance == null) {
@@ -204,6 +228,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             throws RpcException {
 
         //Allocating one in advance, this list is certain to be used.
+        // 预先分配一个，这个列表是一定会用到的.
         List<Invoker<T>> reselectInvokers = new ArrayList<Invoker<T>>(invokers.size() > 1 ? (invokers.size() - 1) : invokers.size());
 
         //First, try picking a invoker not in `selected`.
@@ -262,6 +287,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     public Result invoke(final Invocation invocation) throws RpcException {
         //校验是否已经销毁
         checkWhetherDestroyed();
+
         LoadBalance loadbalance = null;
 
         // binding attachments into invocation.
@@ -273,12 +299,15 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
         // 列举 Invoker
         List<Invoker<T>> invokers = list(invocation);
+
         if (invokers != null && !invokers.isEmpty()) {
             loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
                     .getMethodParameter(RpcUtils.getMethodName(invocation), Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
         }
 
+        // 设置调用编号，若是异步调用
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
+
         // 此处是一个模板方法，调用具体的实现，比如默认是FailoverClusterInvoker
         return doInvoke(invocation, invokers, loadbalance);
     }

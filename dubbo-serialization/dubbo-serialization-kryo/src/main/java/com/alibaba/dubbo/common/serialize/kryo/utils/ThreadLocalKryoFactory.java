@@ -18,6 +18,10 @@ package com.alibaba.dubbo.common.serialize.kryo.utils;
 
 import com.esotericsoftware.kryo.Kryo;
 
+/**
+ * 实现 AbstractKryoFactory 抽象类，基于 ThreadLocal 的 Kryo 工厂实现类
+ * Kryo 的序列化和反序列的过程，是非线程安全的。所以通过 ThreadLocal 来保证，每个线程拥有一个 Kryo 对象
+ */
 public class ThreadLocalKryoFactory extends AbstractKryoFactory {
 
     private final ThreadLocal<Kryo> holder = new ThreadLocal<Kryo>() {

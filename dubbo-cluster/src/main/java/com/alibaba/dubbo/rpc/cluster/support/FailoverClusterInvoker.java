@@ -68,6 +68,8 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         for (int i = 0; i < len; i++) {
             //Reselect before retry to avoid a change of candidate `invokers`.
             //NOTE: if `invokers` changed, then `invoked` also lose accuracy.
+            // 重试时，进行重新选择，避免重试时invoker列表已发生变化.
+            // 注意：如果列表发生了变化，那么invoked判断会失效，因为invoker示例已经改变
             if (i > 0) {
                 checkWhetherDestroyed();
                 // 在进行重试前重新列举 Invoker，这样做的好处是，如果某个服务挂了，
@@ -100,9 +102,11 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 }
                 return result;
             } catch (RpcException e) {
+                // 如果是业务性质的异常，不再重试，直接抛出
                 if (e.isBiz()) { // biz exception.
                     throw e;
                 }
+                // 其他性质的异常统一封装成RpcException
                 le = e;
             } catch (Throwable e) {
                 le = new RpcException(e.getMessage(), e);
@@ -110,7 +114,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 providers.add(invoker.getUrl().getAddress());
             }
         }
-        // 若重试失败，则抛出异常
+        //最大可调用次数用完还得到Result的话，抛出RpcException异常：重试了N次还是失败，并输出最后一次异常信息
         throw new RpcException(le != null ? le.getCode() : 0, "Failed to invoke the method "
                 + invocation.getMethodName() + " in the service " + getInterface().getName()
                 + ". Tried " + len + " times of the providers " + providers

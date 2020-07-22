@@ -42,7 +42,7 @@ public class FailfastClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     @Override
     public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-        //基本校验
+        // 检查 invokers 即可用Invoker集合是否为空，如果为空，那么抛出异常
         checkInvokers(invokers, invocation);
         // 选择 Invoker
         Invoker<T> invoker = select(loadbalance, invocation, invokers, null);

@@ -28,7 +28,14 @@ import java.io.OutputStream;
 
 public class KryoObjectOutput implements ObjectOutput, Cleanable {
 
+    /**
+     * Kryo 对象
+     */
     private Output output;
+
+    /**
+     * Kryo 输出
+     */
     private Kryo kryo;
 
     public KryoObjectOutput(OutputStream outputStream) {

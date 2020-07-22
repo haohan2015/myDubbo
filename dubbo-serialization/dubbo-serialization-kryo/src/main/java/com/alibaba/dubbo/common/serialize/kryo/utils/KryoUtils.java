@@ -20,7 +20,7 @@ import com.esotericsoftware.kryo.Kryo;
 
 /**
  * The kryo utils used by dubbo
- *
+ * Kryo 工具类，目前仅仅对 KryoFactory 进行操作。代码如下：
  * @since 2.6.0
  */
 public class KryoUtils {

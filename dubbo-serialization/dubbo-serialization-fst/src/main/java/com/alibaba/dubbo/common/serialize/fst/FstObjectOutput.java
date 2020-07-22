@@ -23,7 +23,9 @@ import org.nustaq.serialization.FSTObjectOutput;
 import java.io.IOException;
 import java.io.OutputStream;
 
-
+/**
+ * 实现 ObjectOutput 接口，FST 对象输出实现类。
+ */
 public class FstObjectOutput implements ObjectOutput {
 
     private FSTObjectOutput output;
@@ -69,8 +71,10 @@ public class FstObjectOutput implements ObjectOutput {
 
     @Override
     public void writeBytes(byte[] v) throws IOException {
+        // 空，写入 -1
         if (v == null) {
             output.writeInt(-1);
+        // 有数组
         } else {
             writeBytes(v, 0, v.length);
         }
@@ -79,8 +83,10 @@ public class FstObjectOutput implements ObjectOutput {
     @Override
     public void writeBytes(byte[] v, int off, int len) throws IOException {
         if (v == null) {
+            // 空，写入 -1
             output.writeInt(-1);
         } else {
+            // 有数组
             output.writeInt(len);
             output.write(v, off, len);
         }
