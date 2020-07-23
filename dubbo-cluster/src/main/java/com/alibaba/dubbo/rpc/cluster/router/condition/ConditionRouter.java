@@ -45,11 +45,38 @@ import java.util.regex.Pattern;
 public class ConditionRouter implements Router, Comparable<Router> {
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
+
+    /**
+     * 分组正则匹配，详细见 {@link #parseRule(String)} 方法
+     *
+     * 前 [] 为匹配，分隔符
+     * 后 [] 为匹配，内容
+     */
     private static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
+
+    /**
+     * 路由规则 URL
+     */
     private final URL url;
+
+    /**
+     * 路由规则的优先级，用于排序，优先级越大越靠前执行，可不填，缺省为 0 。
+     */
     private final int priority;
+
+    /**
+     * 当路由结果为空时，是否强制执行，如果不强制执行，路由结果为空的路由规则将自动失效，可不填，缺省为 false 。
+     */
     private final boolean force;
+
+    /**
+     * 消费者匹配条件集合，通过解析【条件表达式 rule 的 `=>` 之前半部分】
+     */
     private final Map<String, MatchPair> whenCondition;
+
+    /**
+     * 提供者地址列表的过滤条件，通过解析【条件表达式 rule 的 `=>` 之后半部分】
+     */
     private final Map<String, MatchPair> thenCondition;
 
     public ConditionRouter(URL url) {
@@ -297,8 +324,19 @@ public class ConditionRouter implements Router, Comparable<Router> {
         return result;
     }
 
+    /**
+     * 用于匹配的值组。每个属性条件，例如 method host 等，对应一个 MatchPair 对象
+     */
     private static final class MatchPair {
+
+        /**
+         * 匹配的值集合
+         */
         final Set<String> matches = new HashSet<String>();
+
+        /**
+         * 不匹配的值集合
+         */
         final Set<String> mismatches = new HashSet<String>();
 
         private boolean isMatch(String value, URL param) {

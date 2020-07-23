@@ -402,6 +402,7 @@ public class UrlUtils {
     }
 
     public static boolean isMatchGlobPattern(String pattern, String value, URL param) {
+        // 以美元符 `$` 开头，表示引用参数
         if (param != null && pattern.startsWith("$")) {
             // 引用服务消费者参数，param 参数为服务消费者 url
             pattern = param.getRawParameter(pattern.substring(1));

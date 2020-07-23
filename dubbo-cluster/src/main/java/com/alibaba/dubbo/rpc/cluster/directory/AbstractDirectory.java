@@ -119,8 +119,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     protected void setRouters(List<Router> routers) {
         // copy list
+        // copy list // 复制 routers ，因为下面要修改
         routers = routers == null ? new ArrayList<Router>() : new ArrayList<Router>(routers);
         // append url router
+        // 拼接 `url` 中，配置的路由规则
         String routerkey = url.getParameter(Constants.ROUTER_KEY);
         if (routerkey != null && routerkey.length() > 0) {
             RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getExtension(routerkey);

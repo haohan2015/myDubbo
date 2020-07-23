@@ -177,22 +177,26 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      *             </br>2.override://ip:port...?anyhost=false Special rules (only for a certain provider)
      *             //如果指定的覆盖url的ip不是0.0.0.0，并且anyhost=false，那么这是一个特殊规则，将只影响部分提供者
      *             </br>3.override:// rule is not supported... ,needs to be calculated by registry itself.
+     *             //不支持override://规则... 需要注册中心自行计算.
      *             </br>4.override://0.0.0.0/ without parameters means clearing the override
      *             //如果指定的覆盖url的ip是0.0.0.0，但是没有指定任何参数，那么意味着当前覆盖Url无效
      * @return
      */
     public static List<Configurator> toConfigurators(List<URL> urls) {
+        // 忽略，若配置规则 URL 集合为空
         if (urls == null || urls.isEmpty()) {
             return Collections.emptyList();
         }
 
+        // 创建 Configurator 集合
         List<Configurator> configurators = new ArrayList<Configurator>(urls.size());
         for (URL url : urls) {
-            //有个一个空协议代表不存在配置列表
+            // 若协议为 `empty://` ，意味着清空所有配置规则，因此返回空 Configurator 集合
             if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
                 configurators.clear();
                 break;
             }
+            // 对应第 4 条契约，不带参数的 override://0.0.0.0/ 表示清除 override
             Map<String, String> override = new HashMap<String, String>(url.getParameters());
             //The anyhost parameter of override may be added automatically, it can't change the judgement of changing url
             //anyhost参数可能是被自动添加的，所以它不能作为影响判断url参数的依据，需要移除
@@ -204,6 +208,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             configurators.add(configuratorFactory.getConfigurator(url));
         }
+
+        // 排序
         Collections.sort(configurators);
         return configurators;
     }

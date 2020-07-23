@@ -253,12 +253,16 @@ public class RegistryProtocol implements Protocol {
      */
     @SuppressWarnings("unchecked")
     private <T> void doChangeLocalExport(final Invoker<T> originInvoker, URL newInvokerUrl) {
+        // 校验对应的 Exporter 是否存在。若不存在，打印告警日志。
         String key = getCacheKey(originInvoker);
         final ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
         if (exporter == null) {
             logger.warn(new IllegalStateException("error state, exporter should not be null"));
         } else {
+            // 创建 InvokerDelegete 对象
             final Invoker<T> invokerDelegete = new InvokerDelegete<T>(originInvoker, newInvokerUrl);
+            // 重新暴露 Invoker
+            // 设置到 ExporterChangeableWrapper 中
             exporter.setExporter(protocol.export(invokerDelegete));
         }
     }
@@ -418,7 +422,7 @@ public class RegistryProtocol implements Protocol {
     private <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
         //此处的type=com.alibaba.dubbo.demo.DemoService
         //url的protocol=zookeeper
-        //cluster=Cluster$Adaptive
+        //如果配置了合并结果集，那么此处的cluster的真实类型是MergeableCluster，否则cluster=Cluster$Adaptive
 
         // 创建 RegistryDirectory 对象，并设置注册中心
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
@@ -494,9 +498,23 @@ public class RegistryProtocol implements Protocol {
      * 2.No need to re-register to the registry after notify
      * 3.The invoker passed by the export method , would better to be the invoker of exporter
      */
+    /**
+     * 重新 export ：protocol 中的 exporter destroy 问题
+     *
+     * 1. 要求 registry protocol 返回的 exporter 可以正常 destroy
+     * 2. notify 后不需要重新向注册中心注册
+     * 3. export 方法传入的 invoker 最好能一直作为 exporter 的 invoker.
+     */
     private class OverrideListener implements NotifyListener {
 
+        /**
+         * 订阅 URL 对象
+         */
         private final URL subscribeUrl;
+
+        /**
+         * 原始 Invoker 对象
+         */
         private final Invoker originInvoker;
 
         public OverrideListener(URL subscribeUrl, Invoker originalInvoker) {
@@ -510,7 +528,7 @@ public class RegistryProtocol implements Protocol {
         @Override
         public synchronized void notify(List<URL> urls) {
             logger.debug("original override urls: " + urls);
-            //判断一下提供者和从注册中心获取的Url是否匹配
+            //判断一下提供者和从注册中心获取的配置Url是否匹配
             List<URL> matchedUrls = getMatchedUrls(urls, subscribeUrl);
             logger.debug("subscribe url: " + subscribeUrl + ", override urls: " + matchedUrls);
             // No matching results
@@ -519,23 +537,29 @@ public class RegistryProtocol implements Protocol {
                 return;
             }
 
+            // 将配置规则 URL 集合，**转换**成对应的 Configurator 集合
             List<Configurator> configurators = RegistryDirectory.toConfigurators(matchedUrls);
 
+            // 获得真实的 Invoker 对象
             final Invoker<?> invoker;
             if (originInvoker instanceof InvokerDelegete) {
                 invoker = ((InvokerDelegete<?>) originInvoker).getInvoker();
             } else {
                 invoker = originInvoker;
             }
+
+            // 获得真实的 Invoker 的 URL 对象
             //The origin invoker
             URL originUrl = RegistryProtocol.this.getProviderUrl(invoker);
             String key = getCacheKey(originInvoker);
+            // 忽略，若对应的 Exporter 对象不存在
             ExporterChangeableWrapper<?> exporter = bounds.get(key);
             if (exporter == null) {
                 logger.warn(new IllegalStateException("error state, exporter should not be null"));
                 return;
             }
             //The current, may have been merged many times
+            // 获得 Invoker 当前的 URL 对象，可能已经被之前的配置规则合并过
             URL currentUrl = exporter.getInvoker().getUrl();
             //Merged with this configuration
             //基于配置规则匹配完提供者地址之后，需要重新暴露改服务
@@ -551,12 +575,14 @@ public class RegistryProtocol implements Protocol {
             for (URL url : configuratorUrls) {
                 URL overrideUrl = url;
                 // Compatible with the old version
+                // 【忽略】，兼容老版本
                 if (url.getParameter(Constants.CATEGORY_KEY) == null
                         && Constants.OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
                     overrideUrl = url.addParameter(Constants.CATEGORY_KEY, Constants.CONFIGURATORS_CATEGORY);
                 }
 
                 // Check whether url is to be applied to the current service
+                // 判断是否匹配
                 if (UrlUtils.isMatch(currentSubscribe, overrideUrl)) {
                     result.add(url);
                 }
