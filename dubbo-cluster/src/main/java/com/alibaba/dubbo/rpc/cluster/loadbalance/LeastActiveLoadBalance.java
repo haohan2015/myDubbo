@@ -27,7 +27,7 @@ import java.util.Random;
 
 /**
  * LeastActiveLoadBalance
- *
+ *实现 AbstractLoadBalance 抽象类，最少活跃调用数，相同活跃数的随机，活跃数指调用前后计数差。
  */
 public class LeastActiveLoadBalance extends AbstractLoadBalance {
 
@@ -37,6 +37,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
 
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+        // 总个数
         // Number of invokers
         int length = invokers.size();
         // The least active value of all invokers
