@@ -402,6 +402,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 }
             } else {
                 //否则就是指定的mokc类，校验指定的mock类是否是指定的接口的实现
+                //从 Mock 配置校验的逻辑我们可以看出，不允许配置 "force:" 和 "fail:" 为开头。所以，不能通过 Java API 或者 XML ，又或者注解来配置 Mock 规则，只能通过配置规则来开启服务降级
                 Class<?> mockClass = ConfigUtils.isDefault(mock) ? ReflectUtils.forName(interfaceClass.getName() + "Mock") : ReflectUtils.forName(mock);
                 if (!interfaceClass.isAssignableFrom(mockClass)) {
                     throw new IllegalStateException("The mock implementation class " + mockClass.getName() + " not implement interface " + interfaceClass.getName());
