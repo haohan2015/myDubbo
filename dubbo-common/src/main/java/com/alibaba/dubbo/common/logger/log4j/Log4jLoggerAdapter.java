@@ -27,18 +27,27 @@ import org.apache.log4j.LogManager;
 import java.io.File;
 import java.util.Enumeration;
 
+/**
+ * 实现 LoggerAdapter 接口，log4j 的 LoggerAdapter 实现类。
+ */
 public class Log4jLoggerAdapter implements LoggerAdapter {
 
+    /**
+     * Root Logger 的文件，在构造方法中初始化
+     */
     private File file;
 
     @SuppressWarnings("unchecked")
     public Log4jLoggerAdapter() {
         try {
+            // 获得 Root Logger 对象
             org.apache.log4j.Logger logger = LogManager.getRootLogger();
             if (logger != null) {
+                // 循环每个 Logger 对象的 Appender 对象
                 Enumeration<Appender> appenders = logger.getAllAppenders();
                 if (appenders != null) {
                     while (appenders.hasMoreElements()) {
+                        // 当且仅当 FileAppender 时
                         Appender appender = appenders.nextElement();
                         if (appender instanceof FileAppender) {
                             FileAppender fileAppender = (FileAppender) appender;
@@ -70,6 +79,11 @@ public class Log4jLoggerAdapter implements LoggerAdapter {
         return org.apache.log4j.Level.OFF;
     }
 
+    /**
+     * 将 Log4j 的日志级别转成 Dubbo 的日志级别
+     * @param level
+     * @return
+     */
     private static Level fromLog4jLevel(org.apache.log4j.Level level) {
         if (level == org.apache.log4j.Level.ALL)
             return Level.ALL;

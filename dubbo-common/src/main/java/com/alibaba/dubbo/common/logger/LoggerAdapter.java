@@ -22,6 +22,7 @@ import java.io.File;
 
 /**
  * Logger provider
+ * Logger 适配器接口，负责对接不同日志库的 LoggerFactory
  */
 @SPI
 public interface LoggerAdapter {

@@ -22,6 +22,9 @@ import com.alibaba.dubbo.common.logger.LoggerAdapter;
 
 import java.io.File;
 
+/**
+ * 实现 LoggerAdapter 接口，slf4j 的 LoggerAdapter 实现类。
+ */
 public class Slf4jLoggerAdapter implements LoggerAdapter {
 
     private Level level;

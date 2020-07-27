@@ -20,6 +20,9 @@ import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.utils.NetUtils;
 
+/**
+ * 实现 Logger 接口，失败安全的 Logger 实现类
+ */
 public class FailsafeLogger implements Logger {
 
     private Logger logger;
