@@ -34,7 +34,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
     private final Invoker<?> invoker;
 
     public InvokerInvocationHandler(Invoker<?> handler) {
-        //对于服务消费者，handler的实际类型是MockClusterInvoker
+        //对于服务消费者，有注册中心的情况，此处的invoker类型为MockClusterInvoker，如果是本地引用的话，此处的invoker的真实类型是基于过滤器生成的Invoker
         this.invoker = handler;
     }
 
@@ -55,7 +55,8 @@ public class InvokerInvocationHandler implements InvocationHandler {
         if ("equals".equals(methodName) && parameterTypes.length == 1) {
             return invoker.equals(args[0]);
         }
-        // 将 method 和 args 封装到 RpcInvocation 中，并执行后续的调用，此处的invoker的实际类型是MockClusterInvoker，此处返回的真实类型是Result
+        // 将 method 和 args 封装到 RpcInvocation 中，并执行后续的调用，此处的invoker对于服务消费者，有注册中心的情况，
+        // 此处的invoker类型为MockClusterInvoker，如果是本地引用的话，此处的invoker的真实类型是基于过滤器生成的Invoker，此处返回的真实类型是Result
         return invoker.invoke(new RpcInvocation(method, args)).recreate();
     }
 

@@ -31,7 +31,7 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
 
     @Override
     public <T> T getProxy(Invoker<T> invoker) throws RpcException {
-        //此处的invoker类型为MockClusterInvoker
+        //对于服务消费者，有注册中心的情况，此处的invoker类型为MockClusterInvoker，如果是本地引用的话，此处的invoker的真实类型是基于过滤器生成的Invoker
         return getProxy(invoker, false);
     }
 

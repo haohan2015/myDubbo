@@ -62,7 +62,7 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public <T> T getProxy(Invoker<T> invoker) throws RpcException {
-        //对于服务消费者，此处的invoker类型为MockClusterInvoker
+        //对于服务消费者，有注册中心的情况，此处的invoker类型为MockClusterInvoker，如果是本地引用的话，此处的invoker的真实类型是基于过滤器生成的Invoker
         //此处的proxyFactory的真实类型是JavassistProxyFactory，但是因为没有覆盖父类的该方法，
         // 所以实际上调用的是父类AbstractProxyFactory
         T proxy = proxyFactory.getProxy(invoker);

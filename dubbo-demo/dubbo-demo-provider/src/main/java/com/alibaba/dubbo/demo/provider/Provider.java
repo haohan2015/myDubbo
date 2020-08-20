@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.demo.provider;
 
+import com.alibaba.dubbo.demo.DemoService;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class Provider {
@@ -27,6 +28,9 @@ public class Provider {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-provider.xml"});
         context.start();
 
+        DemoService demoService = (DemoService) context.getBean("demoServiceInJvm");
+        String result = demoService.sayHello("tom");
+        System.out.printf(result);
         System.in.read(); // press any key to exit
     }
 

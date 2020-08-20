@@ -38,5 +38,6 @@
     <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService"/>
     <dubbo:service interface="com.alibaba.dubbo.demo.HelloService" ref="helloService" validation="true"/>
 
+    <dubbo:reference interface="com.alibaba.dubbo.demo.DemoService" scope="local" id="demoServiceInJvm"/>
 
 </beans>
