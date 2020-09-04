@@ -21,6 +21,8 @@ import com.alibaba.dubbo.demo.HelloService;
 import com.alibaba.dubbo.demo.User;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.util.Arrays;
+
 public class Consumer {
 
     public static void main(String[] args) {
@@ -30,13 +32,11 @@ public class Consumer {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-consumer.xml"});
         context.start();
         DemoService demoService = (DemoService) context.getBean("demoService"); // get remote service proxy
-        HelloService helloService = (HelloService) context.getBean("helloService"); // get remote service proxy
 
         while (true) {
             try {
                 Thread.sleep(1000);
-                User user = new User();
-                helloService.add(user);
+                System.out.println("args = " + demoService.sayHello("tom"));
 
             } catch (Throwable throwable) {
                 throwable.printStackTrace();

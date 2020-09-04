@@ -542,7 +542,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                     }
                     // 若开启，创建 Invoker 对象
                     if (enabled) {
-                        //此处调用的是DubboProtocol的refer
+                        //此处protocol的真实类型是ProtocolAdaptive，然后调用的QosProtocolWrapper，什么也不做，然后调用protocolListenerWrapper，
+                        // 然后调用ProtocolFilterWrapper，最后调用的是DubboProtocol的refer，返回DubboInvoker后，在protocolFilterWrapper生成过滤器Invoker，
+                        // 然后在ProtocolListenerWrapper触发服务导出通知，然后把过滤器Invoker包装为ListenerInvokerWrapper，然后返回，所以此处的Invoker的真实类型是ListenerInvokerWrapper
                         invoker = new InvokerDelegate<T>(protocol.refer(serviceType, url), url, providerUrl);
                     }
                 } catch (Throwable t) {

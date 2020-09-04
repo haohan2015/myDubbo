@@ -513,8 +513,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             // 单个注册中心或服务直连提供者(服务直连，下同)
             if (urls.size() == 1) {
                 /**
-                 * 此处的refprotocol类型为Protocol$Adaptive，会根据url中的Protocol来加载具体的实现，但是实际也并不是直接调用的真实实现类，而是首先调用的是ProtocolFilterWrapper
-                 * 对于有注册中心的服务，第一步什么也不做，会紧接着调用ProtocolListenerWrapper，同样对于有注册中心的服务，这一步什么也不做，然后调用RegistryProtocol，此处返回的是MockClusterInvoker
+                 * 此处的refprotocol类型为Protocol$Adaptive，会根据url中的Protocol来加载具体的实现，但是实际也并不是直接调用的真实实现类，而是首先调用的是ProtocolListenerWrapper
+                 * 对于有注册中心的服务，第一步什么也不做，会紧接着调用ProtocolFilterWrapper，同样对于有注册中心的服务，这一步什么也不做，然后调用RegistryProtocol，此处返回的是MockClusterInvoker
                  */
                 invoker = refprotocol.refer(interfaceClass, urls.get(0));
             } else {

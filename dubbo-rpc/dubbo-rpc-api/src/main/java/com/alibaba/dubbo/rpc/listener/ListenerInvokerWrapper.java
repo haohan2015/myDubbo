@@ -82,6 +82,7 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
     public Result invoke(Invocation invocation) throws RpcException {
         //服务提供者，此处的invoker是具体的InjvmInvoker或者是DubboInvoker，但是实际上这两个类都没有实现该方法，
         // 所以实际上调用的是父类AbstractInvoker
+        //服务消费者调用的是过滤器Invoker
         return invoker.invoke(invocation);
     }
 

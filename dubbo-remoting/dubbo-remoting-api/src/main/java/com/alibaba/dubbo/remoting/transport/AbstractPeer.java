@@ -164,7 +164,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
         if (closed) {
             return;
         }
-        //对于提供者 此处的handler的真实类型是MultiMessageHandler，msg的真实类型是Request
+        //对于提供者 此处的handler的真实类型是MultiMessageHandler，msg的真实类型是Request，如果有消息积压的话就是MultiMessage
         //对于消费者 此处的handler的真实类型是MultiMessageHandler，msg的真实类型是Response
         handler.received(ch, msg);
     }

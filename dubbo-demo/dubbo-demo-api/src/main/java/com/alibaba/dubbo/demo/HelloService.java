@@ -11,5 +11,5 @@ public interface HelloService {
 
     String sayHello(String name);
 
-    void add(@NotNull User user);
+    void add(User user);
 }

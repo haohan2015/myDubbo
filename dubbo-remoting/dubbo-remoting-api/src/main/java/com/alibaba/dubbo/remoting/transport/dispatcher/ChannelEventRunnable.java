@@ -72,7 +72,7 @@ public class ChannelEventRunnable implements Runnable {
                 try {
                     //AbstractChannelHandlerDelegate
                     //对于服务提供者，此处handler的真实类型是DecodeHandler，
-                    // 但是因为覆盖父类AbstractChannelHandlerDelegate的connected方法，所以还是调用的父类AbstractChannelHandlerDelegate
+                    // 但是因为没有覆盖父类AbstractChannelHandlerDelegate的connected方法，所以还是调用的父类AbstractChannelHandlerDelegate
                     //channel的真实类型是NettyChannel
                     handler.connected(channel);
                 } catch (Exception e) {

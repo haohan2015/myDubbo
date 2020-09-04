@@ -231,7 +231,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                         });
                         zkListener = listeners.get(listener);
                     }
-                    //如果对于监听者来说，这个些路径节点都存在，其实不需要创建的
+                    //如果对于消费者来说，这个些路径节点都存在，其实不需要创建的
                     zkClient.create(path, false);
                     //添加该路径节点的子监听者
                     //如果当前服务是服务消费者，那么此处返回的是服务提供者信息，类似dubbo://172.16.10.53:20880/

@@ -12,10 +12,8 @@ public class User implements Serializable{
 
     private static final long serialVersionUID = -3177815185954294708L;
 
-    @NotNull
     private Integer id;
 
-    @NotNull
     private String name;
 
     public Integer getId() {
